@@ -19,7 +19,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/shimmer-labs/n8n-nodes-podcast-data-extractor-taddy.git"
+    "url": "git+https://github.com/shimmer-labs/n8n-nodes-podcast-data-extractor-taddy.git"
   },
   "engines": {
     "node": ">=20.15"

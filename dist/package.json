@@ -1,6 +1,6 @@
 {
     "name": "n8n-nodes-podcast-data-extractor-taddy",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "description": "Extract data from 4M+ podcasts via Taddy API - search shows, get episodes, extract transcripts for podcast analysis workflows",
     "keywords": [
         "n8n-community-node-package",
@@ -11,7 +11,7 @@
         "n8n",
         "automation"
     ],
-    "license": "Apache-2.0",
+    "license": "MIT",
     "homepage": "https://github.com/shimmer-labs/n8n-nodes-podcast-data-extractor-taddy",
     "author": {
         "name": "Shimmer Labs",
@@ -19,7 +19,7 @@
     },
     "repository": {
         "type": "git",
-        "url": "https://github.com/shimmer-labs/n8n-nodes-podcast-data-extractor-taddy.git"
+        "url": "git+https://github.com/shimmer-labs/n8n-nodes-podcast-data-extractor-taddy.git"
     },
     "engines": {
         "node": ">=20.15"
