@@ -25,19 +25,19 @@ export class TaddyPodcast implements INodeType {
             name: 'Check API Credits',
             value: 'checkCredits',
             description: 'Check remaining transcript credits',
-            action: 'Check remaining transcript credits',
+            action: 'check remaining transcript credits',
           },
           {
             name: 'Get Episode Transcript',
             value: 'getTranscript',
             description: 'Extract transcript from a specific episode',
-            action: 'Extract transcript from a specific episode',
+            action: 'extract transcript from a specific episode',
           },
           {
             name: 'Get Known Podcasts',
             value: 'getKnown',
             description: 'Get well-known podcasts (guaranteed to work)',
-            action: 'Get well known podcasts guaranteed to work',
+            action: 'get well known podcasts guaranteed to work',
           },
           {
             name: 'Get Podcast by UUID',
@@ -54,8 +54,8 @@ export class TaddyPodcast implements INodeType {
           {
             name: 'Search Podcasts',
             value: 'searchPodcasts',
-            description: 'Search for podcasts by keyword',
-            action: 'Search for podcasts by keyword',
+            description: 'Search for podcasts and episodes with advanced filters',
+            action: 'Search for podcasts and episodes with advanced filters',
           },
         ],
         default: 'getKnown',
@@ -72,6 +72,138 @@ export class TaddyPodcast implements INodeType {
             operation: ['searchPodcasts'],
           },
         },
+      },
+      {
+        displayName: 'Max Results',
+        name: 'maxResults',
+        type: 'number',
+        default: 10,
+        description: 'Maximum number of results to return (handled client-side)',
+        displayOptions: {
+          show: {
+            operation: ['searchPodcasts', 'getPodcastEpisodes'],
+          },
+        },
+      },
+      // Advanced Search Options - WITH CORRECT COUNTRY ENUMS
+      {
+        displayName: 'Advanced Options',
+        name: 'advancedOptions',
+        type: 'collection',
+        placeholder: 'Add Option',
+        default: {},
+        displayOptions: {
+          show: {
+            operation: ['searchPodcasts'],
+          },
+        },
+        options: [
+          {
+            displayName: 'Content Types',
+            name: 'filterForTypes',
+            type: 'multiOptions',
+            options: [
+              { name: 'Podcast Series', value: 'PODCASTSERIES' },
+              { name: 'Podcast Episodes', value: 'PODCASTEPISODE' },
+              { name: 'Comic Series', value: 'COMICSERIES' },
+              { name: 'Creators', value: 'CREATOR' },
+            ],
+            default: ['PODCASTSERIES'],
+            description: 'Types of content to search for',
+          },
+          {
+            displayName: 'Match Strategy',
+            name: 'matchBy',
+            type: 'options',
+            options: [
+              { name: 'Most Terms (Default)', value: 'MOST_TERMS' },
+              { name: 'All Terms', value: 'ALL_TERMS' },
+              { name: 'Exact Phrase', value: 'EXACT_PHRASE' },
+            ],
+            default: 'MOST_TERMS',
+            description: 'How strictly to match search terms',
+          },
+          {
+            displayName: 'Sort By',
+            name: 'sortBy',
+            type: 'options',
+            options: [
+              { name: 'Exactness (Default)', value: 'EXACTNESS' },
+              { name: 'Popularity', value: 'POPULARITY' },
+            ],
+            default: 'EXACTNESS',
+            description: 'How to sort results',
+          },
+          {
+            displayName: 'Countries',
+            name: 'filterForCountries',
+            type: 'multiOptions',
+            options: [
+              { name: 'United States', value: 'UNITED_STATES_OF_AMERICA' },
+              { name: 'United Kingdom', value: 'UNITED_KINGDOM' },
+              { name: 'Canada', value: 'CANADA' },
+              { name: 'Australia', value: 'AUSTRALIA' },
+              { name: 'Germany', value: 'GERMANY' },
+              { name: 'France', value: 'FRANCE' },
+              { name: 'Netherlands', value: 'NETHERLANDS' },
+              { name: 'Sweden', value: 'SWEDEN' },
+              { name: 'Brazil', value: 'BRAZIL' },
+              { name: 'India', value: 'INDIA' },
+            ],
+            default: [],
+            description: 'Filter by countries (top 10 markets for podcast content)',
+          },
+          {
+            displayName: 'Languages',
+            name: 'filterForLanguages',
+            type: 'multiOptions',
+            options: [
+              { name: 'English', value: 'ENGLISH' },
+              { name: 'Spanish', value: 'SPANISH' },
+              { name: 'French', value: 'FRENCH' },
+              { name: 'German', value: 'GERMAN' },
+              { name: 'Portuguese', value: 'PORTUGUESE' },
+              { name: 'Japanese', value: 'JAPANESE' },
+              { name: 'Chinese', value: 'CHINESE' },
+              { name: 'Russian', value: 'RUSSIAN' },
+            ],
+            default: [],
+            description: 'Filter by languages',
+          },
+          {
+            displayName: 'Genres',
+            name: 'filterForGenres',
+            type: 'multiOptions',
+            options: [
+              { name: 'Technology', value: 'PODCASTSERIES_TECHNOLOGY' },
+              { name: 'Business', value: 'PODCASTSERIES_BUSINESS' },
+              { name: 'Education', value: 'PODCASTSERIES_EDUCATION' },
+              { name: 'News', value: 'PODCASTSERIES_NEWS' },
+              { name: 'Comedy', value: 'PODCASTSERIES_COMEDY' },
+              { name: 'Health & Fitness', value: 'PODCASTSERIES_HEALTH_FITNESS' },
+              { name: 'Science', value: 'PODCASTSERIES_SCIENCE' },
+              { name: 'Arts', value: 'PODCASTSERIES_ARTS' },
+              { name: 'Sports', value: 'PODCASTSERIES_SPORTS' },
+              { name: 'True Crime', value: 'PODCASTSERIES_TRUE_CRIME' },
+            ],
+            default: [],
+            description: 'Filter by genres',
+          },
+          {
+            displayName: 'Require Transcript',
+            name: 'filterForHasTranscript',
+            type: 'boolean',
+            default: false,
+            description: 'Only return episodes that have transcripts available',
+          },
+          {
+            displayName: 'Published After Date',
+            name: 'filterForPublishedAfter',
+            type: 'dateTime',
+            default: '',
+            description: 'Only return content published after this date (YYYY-MM-DD HH:MM:SS)',
+          },
+        ],
       },
       {
         displayName: 'Podcast UUID',
@@ -96,18 +228,6 @@ export class TaddyPodcast implements INodeType {
         displayOptions: {
           show: {
             operation: ['getTranscript'],
-          },
-        },
-      },
-      {
-        displayName: 'Max Results',
-        name: 'maxResults',
-        type: 'number',
-        default: 5,
-        description: 'Maximum number of results to return',
-        displayOptions: {
-          show: {
-            operation: ['searchPodcasts', 'getPodcastEpisodes'],
           },
         },
       },
@@ -205,14 +325,60 @@ export class TaddyPodcast implements INodeType {
         } else if (operation === 'searchPodcasts') {
           const searchQuery = this.getNodeParameter('searchQuery', i) as string;
           const maxResults = this.getNodeParameter('maxResults', i) as number;
+          const advancedOptions = this.getNodeParameter('advancedOptions', i, {}) as IDataObject;
           
           if (!searchQuery) {
             throw new NodeOperationError(this.getNode(), 'Search query is required for searchPodcasts operation');
           }
 
+          // Build search query with CORRECT COUNTRY ENUMS
+          const queryParams: string[] = [`term: "${searchQuery}"`];
+          
+          // Content Types
+          if (advancedOptions.filterForTypes && Array.isArray(advancedOptions.filterForTypes) && advancedOptions.filterForTypes.length > 0) {
+            queryParams.push(`filterForTypes: [${advancedOptions.filterForTypes.join(', ')}]`);
+          }
+          
+          // Match strategy
+          if (advancedOptions.matchBy && advancedOptions.matchBy !== 'MOST_TERMS') {
+            queryParams.push(`matchBy: ${advancedOptions.matchBy}`);
+          }
+          
+          // Sort by
+          if (advancedOptions.sortBy && advancedOptions.sortBy !== 'EXACTNESS') {
+            queryParams.push(`sortBy: ${advancedOptions.sortBy}`);
+          }
+          
+          // Countries - now using EXACT enum values from schema
+          if (advancedOptions.filterForCountries && Array.isArray(advancedOptions.filterForCountries) && advancedOptions.filterForCountries.length > 0) {
+            queryParams.push(`filterForCountries: [${advancedOptions.filterForCountries.join(', ')}]`);
+          }
+          
+          // Languages
+          if (advancedOptions.filterForLanguages && Array.isArray(advancedOptions.filterForLanguages) && advancedOptions.filterForLanguages.length > 0) {
+            queryParams.push(`filterForLanguages: [${advancedOptions.filterForLanguages.join(', ')}]`);
+          }
+          
+          // Genres
+          if (advancedOptions.filterForGenres && Array.isArray(advancedOptions.filterForGenres) && advancedOptions.filterForGenres.length > 0) {
+            queryParams.push(`filterForGenres: [${advancedOptions.filterForGenres.join(', ')}]`);
+          }
+          
+          // Boolean transcript filter
+          if (advancedOptions.filterForHasTranscript === true) {
+            queryParams.push(`filterForHasTranscript: true`);
+          }
+          
+          // Published after timestamp
+          if (advancedOptions.filterForPublishedAfter) {
+            const timestamp = Math.floor(new Date(advancedOptions.filterForPublishedAfter as string).getTime() / 1000);
+            queryParams.push(`filterForPublishedAfter: ${timestamp}`);
+          }
+
+          // Use the working 'search' operation
           const query = `
-            query SearchPodcasts($term: String!) {
-              searchForTerm(term: $term) {
+            query SearchPodcasts {
+              search(${queryParams.join(', ')}) {
                 searchId
                 podcastSeries {
                   uuid
@@ -230,27 +396,51 @@ export class TaddyPodcast implements INodeType {
                   }
                   genres
                 }
+                podcastEpisodes {
+                  uuid
+                  name
+                  subtitle
+                  description
+                  audioUrl
+                  imageUrl
+                  datePublished
+                  transcript
+                  podcastSeries {
+                    uuid
+                    name
+                    imageUrl
+                  }
+                }
               }
             }
           `;
 
-          const variables = { term: searchQuery };
-          const apiResponse = await requestWithRetry(query, variables);
-
-          let results = apiResponse.data?.searchForTerm?.podcastSeries || [];
+          const apiResponse = await requestWithRetry(query);
+          const searchData = apiResponse.data?.search || {};
           
-          if (results.length > maxResults) {
-            results = results.slice(0, maxResults);
+          let podcastResults = searchData.podcastSeries || [];
+          let episodeResults = searchData.podcastEpisodes || [];
+          
+          // Apply client-side limit
+          if (podcastResults.length > maxResults) {
+            podcastResults = podcastResults.slice(0, maxResults);
+          }
+          if (episodeResults.length > maxResults) {
+            episodeResults = episodeResults.slice(0, maxResults);
           }
 
           responseData = {
             operation,
             searchQuery,
             maxResults,
-            searchId: apiResponse.data?.searchForTerm?.searchId || '',
-            results,
-            totalFound: apiResponse.data?.searchForTerm?.podcastSeries?.length || 0,
-            returned: results.length,
+            advancedOptions,
+            searchId: searchData.searchId || '',
+            podcastSeries: podcastResults,
+            podcastEpisodes: episodeResults,
+            totalPodcastsFound: searchData.podcastSeries?.length || 0,
+            totalEpisodesFound: searchData.podcastEpisodes?.length || 0,
+            podcastsReturned: podcastResults.length,
+            episodesReturned: episodeResults.length,
           };
 
         } else if (operation === 'getPodcastByUuid') {
@@ -271,9 +461,12 @@ export class TaddyPodcast implements INodeType {
                 rssUrl
                 language
                 totalEpisodesCount
+                authorName
+                websiteUrl
                 itunesInfo { 
                   uuid 
-                  baseArtworkUrlOf(size: 640) 
+                  baseArtworkUrlOf(size: 640)
+                  summary
                 }
                 genres
               }
@@ -310,6 +503,8 @@ export class TaddyPodcast implements INodeType {
                   episodeNumber
                   seasonNumber
                   transcriptUrls
+                  imageUrl
+                  fileType
                 }
               }
             }
