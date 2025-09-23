@@ -12,6 +12,7 @@ class TaddyPodcastApi {
                 name: 'userId',
                 type: 'string',
                 default: '',
+                required: true,
             },
             {
                 displayName: 'API Key',
@@ -21,8 +22,23 @@ class TaddyPodcastApi {
                     password: true,
                 },
                 default: '',
+                required: true,
             },
         ];
+        this.test = {
+            request: {
+                baseURL: 'https://api.taddy.org',
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-USER-ID': '={{$credentials.userId}}',
+                    'X-API-KEY': '={{$credentials.apiKey}}',
+                },
+                body: {
+                    query: '{ getTranscriptCreditsRemaining }',
+                },
+            },
+        };
     }
 }
 exports.TaddyPodcastApi = TaddyPodcastApi;
