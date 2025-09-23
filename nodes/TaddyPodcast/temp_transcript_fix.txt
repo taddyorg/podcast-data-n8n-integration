@@ -1,0 +1,31 @@
+        } else if (operation === 'getTranscript') {
+          const episodeUuid = this.getNodeParameter('episodeUuid', i) as string;
+          
+          if (!episodeUuid) {
+            throw new Error('Episode UUID is required for getTranscript operation');
+          }
+
+          // Fixed: transcript is [String], not an object with subfields
+          const query = `
+            query GetEpisodeTranscript($uuid: ID!) {
+              getPodcastEpisode(uuid: $uuid) {
+                uuid
+                name
+                description
+                transcript
+              }
+            }
+          `;
+
+          const apiResponse = await requestWithRetry(query, { uuid: episodeUuid });
+          const episode = apiResponse.data?.getPodcastEpisode;
+
+          responseData = {
+            operation,
+            episodeUuid,
+            episodeName: episode?.name || 'Unknown',
+            transcript: episode?.transcript || [],
+            transcriptSegments: episode?.transcript?.length || 0,
+            transcriptText: (episode?.transcript || []).join('\n'),
+          };
+        }
