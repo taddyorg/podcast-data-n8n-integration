@@ -25,19 +25,19 @@ export class TaddyPodcast implements INodeType {
             name: 'Check API Credits',
             value: 'checkCredits',
             description: 'Check remaining transcript credits',
-            action: 'check remaining transcript credits',
+            action: 'Check remaining transcript credits',
           },
           {
             name: 'Get Episode Transcript',
             value: 'getTranscript',
             description: 'Extract transcript from a specific episode',
-            action: 'extract transcript from a specific episode',
+            action: 'Extract transcript from a specific episode',
           },
           {
             name: 'Get Known Podcasts',
             value: 'getKnown',
             description: 'Get well-known podcasts (guaranteed to work)',
-            action: 'get well known podcasts guaranteed to work',
+            action: 'Get well known podcasts guaranteed to work',
           },
           {
             name: 'Get Podcast by UUID',
@@ -85,7 +85,7 @@ export class TaddyPodcast implements INodeType {
           },
         },
       },
-      // Advanced Search Options - WITH CORRECT COUNTRY ENUMS
+      // Advanced Search Options - ALPHABETICALLY ORDERED
       {
         displayName: 'Advanced Options',
         name: 'advancedOptions',
@@ -103,25 +103,75 @@ export class TaddyPodcast implements INodeType {
             name: 'filterForTypes',
             type: 'multiOptions',
             options: [
-              { name: 'Podcast Series', value: 'PODCASTSERIES' },
-              { name: 'Podcast Episodes', value: 'PODCASTEPISODE' },
               { name: 'Comic Series', value: 'COMICSERIES' },
               { name: 'Creators', value: 'CREATOR' },
+              { name: 'Podcast Episodes', value: 'PODCASTEPISODE' },
+              { name: 'Podcast Series', value: 'PODCASTSERIES' },
             ],
             default: ['PODCASTSERIES'],
             description: 'Types of content to search for',
+          },
+          {
+            displayName: 'Genres',
+            name: 'filterForGenres',
+            type: 'multiOptions',
+            options: [
+              { name: 'Arts', value: 'PODCASTSERIES_ARTS' },
+              { name: 'Business', value: 'PODCASTSERIES_BUSINESS' },
+              { name: 'Comedy', value: 'PODCASTSERIES_COMEDY' },
+              { name: 'Education', value: 'PODCASTSERIES_EDUCATION' },
+              { name: 'Health & Fitness', value: 'PODCASTSERIES_HEALTH_FITNESS' },
+              { name: 'News', value: 'PODCASTSERIES_NEWS' },
+              { name: 'Science', value: 'PODCASTSERIES_SCIENCE' },
+              { name: 'Sports', value: 'PODCASTSERIES_SPORTS' },
+              { name: 'Technology', value: 'PODCASTSERIES_TECHNOLOGY' },
+              { name: 'True Crime', value: 'PODCASTSERIES_TRUE_CRIME' },
+            ],
+            default: [],
+            description: 'Filter by genres',
+          },
+          {
+            displayName: 'Languages',
+            name: 'filterForLanguages',
+            type: 'multiOptions',
+            options: [
+              { name: 'Chinese', value: 'CHINESE' },
+              { name: 'English', value: 'ENGLISH' },
+              { name: 'French', value: 'FRENCH' },
+              { name: 'German', value: 'GERMAN' },
+              { name: 'Japanese', value: 'JAPANESE' },
+              { name: 'Portuguese', value: 'PORTUGUESE' },
+              { name: 'Russian', value: 'RUSSIAN' },
+              { name: 'Spanish', value: 'SPANISH' },
+            ],
+            default: [],
+            description: 'Filter by languages',
           },
           {
             displayName: 'Match Strategy',
             name: 'matchBy',
             type: 'options',
             options: [
-              { name: 'Most Terms (Default)', value: 'MOST_TERMS' },
               { name: 'All Terms', value: 'ALL_TERMS' },
               { name: 'Exact Phrase', value: 'EXACT_PHRASE' },
+              { name: 'Most Terms (Default)', value: 'MOST_TERMS' },
             ],
             default: 'MOST_TERMS',
             description: 'How strictly to match search terms',
+          },
+          {
+            displayName: 'Published After Date',
+            name: 'filterForPublishedAfter',
+            type: 'dateTime',
+            default: '',
+            description: 'Only return content published after this date (YYYY-MM-DD HH:MM:SS)',
+          },
+          {
+            displayName: 'Require Transcript',
+            name: 'filterForHasTranscript',
+            type: 'boolean',
+            default: false,
+            description: 'Whether to return only episodes that have transcripts available',
           },
           {
             displayName: 'Sort By',
@@ -133,75 +183,6 @@ export class TaddyPodcast implements INodeType {
             ],
             default: 'EXACTNESS',
             description: 'How to sort results',
-          },
-          {
-            displayName: 'Countries',
-            name: 'filterForCountries',
-            type: 'multiOptions',
-            options: [
-              { name: 'United States', value: 'UNITED_STATES_OF_AMERICA' },
-              { name: 'United Kingdom', value: 'UNITED_KINGDOM' },
-              { name: 'Canada', value: 'CANADA' },
-              { name: 'Australia', value: 'AUSTRALIA' },
-              { name: 'Germany', value: 'GERMANY' },
-              { name: 'France', value: 'FRANCE' },
-              { name: 'Netherlands', value: 'NETHERLANDS' },
-              { name: 'Sweden', value: 'SWEDEN' },
-              { name: 'Brazil', value: 'BRAZIL' },
-              { name: 'India', value: 'INDIA' },
-            ],
-            default: [],
-            description: 'Filter by countries (top 10 markets for podcast content)',
-          },
-          {
-            displayName: 'Languages',
-            name: 'filterForLanguages',
-            type: 'multiOptions',
-            options: [
-              { name: 'English', value: 'ENGLISH' },
-              { name: 'Spanish', value: 'SPANISH' },
-              { name: 'French', value: 'FRENCH' },
-              { name: 'German', value: 'GERMAN' },
-              { name: 'Portuguese', value: 'PORTUGUESE' },
-              { name: 'Japanese', value: 'JAPANESE' },
-              { name: 'Chinese', value: 'CHINESE' },
-              { name: 'Russian', value: 'RUSSIAN' },
-            ],
-            default: [],
-            description: 'Filter by languages',
-          },
-          {
-            displayName: 'Genres',
-            name: 'filterForGenres',
-            type: 'multiOptions',
-            options: [
-              { name: 'Technology', value: 'PODCASTSERIES_TECHNOLOGY' },
-              { name: 'Business', value: 'PODCASTSERIES_BUSINESS' },
-              { name: 'Education', value: 'PODCASTSERIES_EDUCATION' },
-              { name: 'News', value: 'PODCASTSERIES_NEWS' },
-              { name: 'Comedy', value: 'PODCASTSERIES_COMEDY' },
-              { name: 'Health & Fitness', value: 'PODCASTSERIES_HEALTH_FITNESS' },
-              { name: 'Science', value: 'PODCASTSERIES_SCIENCE' },
-              { name: 'Arts', value: 'PODCASTSERIES_ARTS' },
-              { name: 'Sports', value: 'PODCASTSERIES_SPORTS' },
-              { name: 'True Crime', value: 'PODCASTSERIES_TRUE_CRIME' },
-            ],
-            default: [],
-            description: 'Filter by genres',
-          },
-          {
-            displayName: 'Require Transcript',
-            name: 'filterForHasTranscript',
-            type: 'boolean',
-            default: false,
-            description: 'Only return episodes that have transcripts available',
-          },
-          {
-            displayName: 'Published After Date',
-            name: 'filterForPublishedAfter',
-            type: 'dateTime',
-            default: '',
-            description: 'Only return content published after this date (YYYY-MM-DD HH:MM:SS)',
           },
         ],
       },
@@ -331,7 +312,7 @@ export class TaddyPodcast implements INodeType {
             throw new NodeOperationError(this.getNode(), 'Search query is required for searchPodcasts operation');
           }
 
-          // Build search query with CORRECT COUNTRY ENUMS
+          // Build search query with ONLY WORKING PARAMETERS
           const queryParams: string[] = [`term: "${searchQuery}"`];
           
           // Content Types
@@ -347,11 +328,6 @@ export class TaddyPodcast implements INodeType {
           // Sort by
           if (advancedOptions.sortBy && advancedOptions.sortBy !== 'EXACTNESS') {
             queryParams.push(`sortBy: ${advancedOptions.sortBy}`);
-          }
-          
-          // Countries - now using EXACT enum values from schema
-          if (advancedOptions.filterForCountries && Array.isArray(advancedOptions.filterForCountries) && advancedOptions.filterForCountries.length > 0) {
-            queryParams.push(`filterForCountries: [${advancedOptions.filterForCountries.join(', ')}]`);
           }
           
           // Languages
@@ -375,7 +351,6 @@ export class TaddyPodcast implements INodeType {
             queryParams.push(`filterForPublishedAfter: ${timestamp}`);
           }
 
-          // Use the working 'search' operation
           const query = `
             query SearchPodcasts {
               search(${queryParams.join(', ')}) {
