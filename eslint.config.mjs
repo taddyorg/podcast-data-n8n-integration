@@ -15,8 +15,14 @@ export default [
       '@typescript-eslint': tseslint,
     },
     rules: {
-      // Disable some rules that might be too strict
-      '@typescript-eslint/no-unused-vars': 'off',
+      // Allow unused 'this' parameters (common in n8n nodes)
+      '@typescript-eslint/no-unused-vars': ['error', { 
+        'argsIgnorePattern': '^_',
+        'varsIgnorePattern': '^_',
+        'args': 'after-used',
+        'ignoreRestSiblings': true
+      }],
+      'no-unused-vars': 'off', // Turn off base rule to avoid conflicts
       '@typescript-eslint/no-explicit-any': 'off',
     }
   },
