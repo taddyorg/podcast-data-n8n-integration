@@ -1,4 +1,4 @@
-import { ICredentialType, INodeProperties } from 'n8n-workflow';
+import { ICredentialType, INodeProperties, ICredentialTestRequest } from 'n8n-workflow';
 
 export class TaddyPodcastApi implements ICredentialType {
   name = 'taddyPodcastApi';
@@ -10,6 +10,7 @@ export class TaddyPodcastApi implements ICredentialType {
       name: 'userId',
       type: 'string',
       default: '',
+      required: true,
     },
     {
       displayName: 'API Key',
@@ -19,6 +20,22 @@ export class TaddyPodcastApi implements ICredentialType {
         password: true,
       },
       default: '',
+      required: true,
     },
   ];
+
+  test: ICredentialTestRequest = {
+    request: {
+      baseURL: 'https://api.taddy.org',
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-USER-ID': '={{$credentials.userId}}',
+        'X-API-KEY': '={{$credentials.apiKey}}',
+      },
+      body: {
+        query: '{ getTranscriptCreditsRemaining }',
+      },
+    },
+  };
 }
