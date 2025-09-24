@@ -4,7 +4,7 @@ export class TaddyPodcast implements INodeType {
   description: INodeTypeDescription = {
     displayName: 'Podcast Data Extractor (Taddy API)',
     name: 'taddyPodcast',
-    icon: 'file:taddyPodcast.svg',
+    icon: 'file:taddypodcast.png',
     group: ['transform'],
     version: 1,
     description: 'Interact with the Taddy Podcast API',
