@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-podcast-data-extractor-taddy",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Extract data from 4M+ podcasts via Taddy API - search shows, get episodes, extract transcripts for podcast analysis workflows",
   "keywords": [
     "n8n-community-node-package",
@@ -34,7 +34,14 @@
     "prepublishOnly": "npm run build && npm run lint -c .eslintrc.prepublish.js nodes credentials package.json"
   },
   "files": [
-    "dist"
+    "dist/**/*.js",
+    "dist/**/*.js.map",
+    "dist/**/*.d.ts",
+    "dist/**/*.json",
+    "dist/**/*.svg",
+    "dist/**/*.png",
+    "dist/package.json",
+    "dist/tsconfig.tsbuildinfo"
   ],
   "n8n": {
     "n8nNodesApiVersion": 1,
