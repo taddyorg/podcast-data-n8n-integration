@@ -1,0 +1,18 @@
+--- a/nodes/TaddyPodcast/TaddyPodcast.node.ts
++++ b/nodes/TaddyPodcast/TaddyPodcast.node.ts
+@@ -721,6 +721,7 @@
+                 limitPerPage: $limitPerPage
+                 taddyType: PODCASTSERIES
+               ) {
++                popularityRankId
+                 podcastSeries {
+                   uuid
+                   name
+@@ -746,6 +747,7 @@
+             operation: 'getPopularPodcasts',
+             podcasts: apiResponse.data?.getPopularContent?.podcastSeries || [],
+             totalReturned: apiResponse.data?.getPopularContent?.podcastSeries?.length || 0,
++            popularityRankId: apiResponse.data?.getPopularContent?.popularityRankId || '',
+             filters: {
+               genres: genres.length > 0 ? genres : 'all',
+               language: language || 'all',
