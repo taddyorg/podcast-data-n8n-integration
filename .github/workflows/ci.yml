@@ -24,8 +24,8 @@ jobs:
       
       - name: Copy icons to dist
         run: |
-          cp nodes/TaddyPodcast/*.svg dist/nodes/TaddyPodcast/ || true
           cp nodes/TaddyPodcast/*.png dist/nodes/TaddyPodcast/ || true
+          cp nodes/TaddyPodcast/*.svg dist/nodes/TaddyPodcast/ || true
       
       - name: Check build output
         run: ls -la dist/nodes/TaddyPodcast/

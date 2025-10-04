@@ -3,7 +3,7 @@ import { ICredentialType, INodeProperties, ICredentialTestRequest } from 'n8n-wo
 export class TaddyPodcastApi implements ICredentialType {
   name = 'taddyPodcastApi';
   displayName = 'Taddy Podcast API';
-  documentationUrl = 'https://docs.taddy.org';
+  documentationUrl = 'https://taddy.org/developers/podcast-api';
   properties: INodeProperties[] = [
     {
       displayName: 'User ID',
@@ -34,7 +34,7 @@ export class TaddyPodcastApi implements ICredentialType {
         'X-API-KEY': '={{$credentials.apiKey}}',
       },
       body: {
-        query: '{ getTranscriptCreditsRemaining }',
+        query: '{ getApiRequestsRemaining }',
       },
     },
   };

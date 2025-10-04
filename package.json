@@ -1,5 +1,5 @@
 {
-  "name": "n8n-nodes-podcast-data-extractor-taddy",
+  "name": "podcast-data-n8n-integration",
   "version": "0.2.3",
   "description": "Extract data from 4M+ podcasts via Taddy API - search shows, get episodes, extract transcripts for podcast analysis workflows",
   "keywords": [
@@ -12,21 +12,21 @@
     "automation"
   ],
   "license": "MIT",
-  "homepage": "https://github.com/shimmer-labs/n8n-nodes-podcast-data-extractor-taddy",
+  "homepage": "https://github.com/taddyorg/podcast-data-n8n-integration",
   "author": {
-    "name": "Shimmer Labs",
-    "email": "shimmerlogan@gmail.com"
+    "name": "Taddy Inc.",
+    "email": "danny@taddy.org"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/shimmer-labs/n8n-nodes-podcast-data-extractor-taddy.git"
+    "url": "git+https://github.com/taddyorg/podcast-data-n8n-integration.git"
   },
   "engines": {
     "node": ">=20.15"
   },
   "main": "index.js",
   "scripts": {
-    "build": "npx rimraf dist && tsc",
+    "build": "npx rimraf dist && tsc && cp nodes/TaddyPodcast/*.svg dist/nodes/TaddyPodcast/ 2>/dev/null && cp nodes/TaddyPodcast/*.png dist/nodes/TaddyPodcast/ 2>/dev/null || true",
     "dev": "tsc --watch",
     "format": "prettier nodes credentials --write",
     "lint": "eslint nodes credentials package.json",
@@ -58,7 +58,7 @@
     "@typescript-eslint/parser": "^8.44.1",
     "eslint": "^8.56.0",
     "eslint-plugin-n8n-nodes-base": "^1.16.1",
-    "n8n-workflow": "^1.0.0",
+    "n8n-workflow": "^1.111.0",
     "prettier": "^2.7.1",
     "rimraf": "^6.0.1",
     "typescript": "^5.5.3"
