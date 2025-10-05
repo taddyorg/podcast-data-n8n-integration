@@ -2,7 +2,7 @@
 
 This is an n8n community node that lets you access the Taddy Podcast API for podcast data extraction and analysis.
 
-[Taddy Podcast API](https://taddy.org/developers/podcast-api) provides comprehensive podcast intelligence through GraphQL APIs.
+[Taddy Podcast API](https://taddy.org/developers/podcast-api) provides podcast and episode data through its GraphQL API.
 
 ## Installation
 
@@ -14,13 +14,12 @@ Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes
 
 ## Operations
 
-* Check Taddy API requests remaining
-* Check remaining transcript credits
-* Extract transcript from a specific episode  
-* Get well known podcasts guaranteed to work
+* Search for a podcast or episode with advanced filters
+* Get the transcript for a specific episode (uses transcript credits)
 * Get detailed information about a specific podcast
 * Get episodes for a specific podcast
-* Search for podcasts and episodes with advanced filters
+* Check number of Taddy API requests remaining
+* Check number of transcript credits remaining
 
 ## Credentials
 
@@ -36,6 +35,7 @@ You'll need a Taddy API account:
 
 ## Version History
 
+* 0.2.3 - Refactored into separate operations
 * 0.2.2 - Added icon support
 * 0.2.0 - Added advanced search functionality
 * 0.1.0 - Initial release

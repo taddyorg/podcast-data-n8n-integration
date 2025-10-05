@@ -22,7 +22,7 @@ npm run format      # Format code with Prettier
 npm run prepublishOnly  # Runs build and lint with stricter rules before publishing
 ```
 
-**Important**: The build process compiles TypeScript to `dist/` but does NOT automatically copy icon files (`.svg`, `.png`). If working with icons, manually copy them to `dist/nodes/TaddyPodcast/` after building, or rely on CI/CD which handles this via the GitHub Actions workflow.
+**Important**: The build process compiles TypeScript to `dist/` but does NOT automatically copy icon files (`.png`). If working with icons, manually copy them to `dist/nodes/TaddyPodcast/` after building, or rely on CI/CD which handles this via the GitHub Actions workflow.
 
 ## Code Architecture
 

@@ -26,7 +26,7 @@
   },
   "main": "index.js",
   "scripts": {
-    "build": "npx rimraf dist && tsc && cp nodes/TaddyPodcast/*.svg dist/nodes/TaddyPodcast/ 2>/dev/null && cp nodes/TaddyPodcast/*.png dist/nodes/TaddyPodcast/ 2>/dev/null || true",
+    "build": "npx rimraf dist && tsc && cp nodes/TaddyPodcast/*.png dist/nodes/TaddyPodcast/ 2>/dev/null || true",
     "dev": "tsc --watch",
     "format": "prettier nodes credentials --write",
     "lint": "eslint nodes credentials package.json",
@@ -38,7 +38,6 @@
     "dist/**/*.js.map",
     "dist/**/*.d.ts",
     "dist/**/*.json",
-    "dist/**/*.svg",
     "dist/**/*.png",
     "dist/package.json",
     "dist/tsconfig.tsbuildinfo"
