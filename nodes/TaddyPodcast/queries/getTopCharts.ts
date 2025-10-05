@@ -1,6 +1,6 @@
 import { INodeProperties, IExecuteFunctions, IDataObject, NodeOperationError } from 'n8n-workflow';
 import { Operation, GENRE_OPTIONS, PodcastSeries, PODCAST_SERIES_FRAGMENT, MAX_API_LIMIT } from '../constants';
-import { requestWithRetry, standardizeResponse } from './shared';
+import { maxResultsField, requestWithRetry, standardizeResponse } from './shared';
 
 // ============================================================================
 // Handler Function
@@ -55,6 +55,7 @@ export async function handleGetTopCharts(
 // ============================================================================
 
 export const getTopChartsFields: INodeProperties[] = [
+	maxResultsField(10, 25, [Operation.GET_DAILY_TOP_CHARTS]),
 	{
 		displayName: 'Filter by Genres',
 		name: 'popularGenres',

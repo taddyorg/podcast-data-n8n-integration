@@ -44,6 +44,7 @@
   ],
   "n8n": {
     "n8nNodesApiVersion": 1,
+    "suggestionsUrl": "https://docs.google.com/forms/d/e/1FAIpQLSfguI31jz1dhbHniAEyxdbky1L-UEKWuAQmApHin8khQq21Uw/viewform?pli=1",
     "credentials": [
       "dist/credentials/TaddyPodcastApi.credentials.js"
     ],

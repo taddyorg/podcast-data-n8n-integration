@@ -1,6 +1,6 @@
 import { INodeProperties, IExecuteFunctions, IDataObject } from 'n8n-workflow';
 import { Operation, GENRE_OPTIONS, LANGUAGE_OPTIONS, SearchVariables, PodcastSeries, MAX_API_LIMIT, PODCAST_SERIES_EXTENDED_FRAGMENT, EPISODE_EXTENDED_FRAGMENT, PODCAST_SERIES_MINI_FRAGMENT, PodcastEpisode } from '../constants';
-import { requestWithRetry, standardizeResponse, parseDate } from './shared';
+import { requestWithRetry, standardizeResponse, parseDate, maxResultsField } from './shared';
 
 // ============================================================================
 // Handler Function
@@ -119,6 +119,7 @@ export const searchFields: INodeProperties[] = [
 			},
 		},
 	},
+	maxResultsField(10, 25, [Operation.SEARCH_PODCASTS, Operation.SEARCH_EPISODES]),
 	{
 		displayName: 'Advanced Options',
 		name: 'advancedOptions',

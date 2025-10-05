@@ -6,6 +6,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is an n8n community node for the Taddy API, enabling podcast data extraction and analysis from 4M+ podcasts. The node integrates with Taddy's GraphQL API to provide operations like podcast search, episode transcript extraction, and podcast metadata retrieval.
 
+## Taddy API Documentation
+You can find the Taddy API documentation:
+- [GraphQL Schema](./taddy-api-docs/schema.graphql)
+- [Documentation](./taddy-api-docs/documentation.md)
+
 ## Common Commands
 
 ### Building and Development
@@ -32,19 +37,43 @@ credentials/
   TaddyPodcastApi.credentials.ts    # Credentials handler (User ID + API Key)
 nodes/
   TaddyPodcast/
-    TaddyPodcast.node.ts            # Main node implementation
+    TaddyPodcast.node.ts            # Main node implementation (delegates to query handlers)
+    constants.ts                    # Enums, interfaces, GraphQL fragments
+    queries/                        # Modular query handlers (one file per operation)
+      index.ts                      # Central router and node description
+      shared.ts                     # Shared utilities (requestWithRetry, validation)
+      search.ts                     # Search operations
+      getPodcastSeries.ts           # Get podcast by UUID/name/RSS/iTunes ID
+      getEpisodesForPodcastSeries.ts # Get episodes for a podcast
+      getLatestEpisodes.ts          # Get latest episodes
+      getMultiplePodcasts.ts        # Batch podcast retrieval
+      getPopularPodcasts.ts         # Popular podcasts
+      getTopCharts.ts               # Daily top charts
+      getEpisodeTranscript.ts       # Transcript extraction
+      checkApiRequestsRemaining.ts  # API quota check
+      checkTranscriptCreditsRemaining.ts # Credit balance check
     taddypodcast.png                # Node icon
 dist/                               # Build output (git-ignored)
 ```
 
 ### Node Implementation Pattern
 
-The main node (`TaddyPodcast.node.ts`) follows the n8n INodeType interface:
+The node follows a **modular architecture** with clear separation of concerns:
 
-1. **Operation-based structure**: Each operation (searchPodcasts, getPodcastByUuid, getTranscript, etc.) is a separate code path within the `execute()` method
-2. **GraphQL queries**: All API calls use GraphQL queries sent to `https://api.taddy.org`
-3. **Retry mechanism**: API requests include retry logic with exponential backoff for resilience
-4. **Credentials**: Accessed via `this.getCredentials('taddyPodcastApi')` to get userId and apiKey
+1. **Main Node** (`TaddyPodcast.node.ts`): Implements the n8n INodeType interface, delegates all operations to `handleOperation()` router
+2. **Central Router** (`queries/index.ts`): Contains the node description and routes operations to their respective handler functions via a switch statement
+3. **Query Handlers** (`queries/*.ts`): Each operation has its own file containing:
+   - Handler function (e.g., `handleGetPodcastSeries()`)
+   - Field definitions (e.g., `getPodcastSeriesFields`)
+   - Operation-specific logic and GraphQL queries
+4. **Shared Utilities** (`queries/shared.ts`): Contains `requestWithRetry()`, validation helpers, and response standardization
+5. **Constants** (`constants.ts`): Defines Operation enum, TypeScript interfaces, GraphQL fragments, and UI options
+
+**Key Patterns**:
+- **GraphQL queries**: All API calls use GraphQL queries sent to `https://api.taddy.org`
+- **Retry mechanism**: API requests include retry logic with exponential backoff for resilience
+- **Credentials**: Accessed via `this.getCredentials('taddyPodcastApi')` to get userId and apiKey
+- **Modular exports**: Each query file exports both handler function and field definitions, imported centrally in `queries/index.ts`
 
 ### Key Architectural Details
 
@@ -55,18 +84,54 @@ The main node (`TaddyPodcast.node.ts`) follows the n8n INodeType interface:
 - The `requestWithRetry()` helper function handles retries and error handling
 
 **Operation Types**:
-- **Search operations**: searchPodcasts, getPopularPodcasts, getTopCharts
-- **Retrieval operations**: getPodcastByUuid, getMultiplePodcasts, getPodcastEpisodes
-- **Transcript operations**: getTranscript (uses API credits), checkCredits
-- **Latest content**: getLatestEpisodes (accepts UUIDs or RSS URLs)
-- **Testing**: getKnown (returns well-known podcasts for testing)
+- **Search operations**: searchPodcasts, searchEpisodes, getPopularPodcasts, getTopCharts
+- **Retrieval operations**:
+  - `getPodcastSeries`: Get podcast details by UUID, name, RSS URL, or iTunes ID
+  - `getEpisodesForPodcastSeries`: Get episodes by UUID, name, RSS URL, or iTunes ID
+  - `getMultiplePodcasts`: Batch retrieve multiple podcasts by UUIDs
+  - `getLatestEpisodes`: Get newly released episodes from multiple podcasts
+- **Transcript operations**: getEpisodeTranscript (uses API credits)
+- **Account management**: checkApiRequestsRemaining, checkTranscriptCreditsRemaining
 
 **Data Flow**:
 1. User configures operation and parameters in n8n UI
-2. Node extracts parameters via `this.getNodeParameter()`
-3. GraphQL query is built based on operation and parameters
-4. API request is made with credentials and retry logic
-5. Response data is formatted and returned to n8n workflow
+2. `TaddyPodcast.node.ts` calls `handleOperation()` router with operation type
+3. Router delegates to appropriate handler function (e.g., `handleGetPodcastSeries()`)
+4. Handler extracts parameters via `this.getNodeParameter()`
+5. Handler builds GraphQL query and calls `requestWithRetry()` from `shared.ts`
+6. API request is made with credentials and retry logic
+7. Response data is standardized via `standardizeResponse()` and returned to n8n workflow
+
+**Modular Query Architecture**:
+
+Each query handler file follows this pattern:
+
+```typescript
+// Example: queries/getPodcastSeries.ts
+import { INodeProperties, IExecuteFunctions, IDataObject } from 'n8n-workflow';
+import { Operation, PODCAST_SERIES_EXTENDED_FRAGMENT } from '../constants';
+import { requestWithRetry, standardizeResponse, validateUuid } from './shared';
+
+// Handler function - performs the operation
+export async function handleGetPodcastSeries(
+  itemIndex: number,
+  context: IExecuteFunctions,
+): Promise<IDataObject> {
+  // 1. Extract and validate parameters
+  // 2. Build GraphQL query
+  // 3. Call requestWithRetry()
+  // 4. Return standardized response
+}
+
+// Field definitions - UI configuration for n8n
+export const getPodcastSeriesFields: INodeProperties[] = [
+  // Array of field definitions with displayOptions
+];
+```
+
+The `queries/index.ts` file imports all handlers and fields, then:
+1. Exports `taddyPodcastDescription` with all fields combined
+2. Exports `handleOperation()` router that switches on operation type
 
 ### Credentials Structure
 
@@ -116,11 +181,99 @@ The `TaddyPodcastApi.credentials.ts` file:
 
 ## Adding New Operations
 
-When adding a new operation to the Taddy node:
+When adding a new operation to the Taddy node, follow this modular pattern:
 
-1. Add the operation to the `options` array in the Operation property
-2. Add conditional fields using `displayOptions.show.operation: ['yourOperation']`
-3. Add the operation handler in the `execute()` method's if-else chain
-4. Construct the appropriate GraphQL query based on Taddy API documentation
-5. Format the response data consistently with existing operations
-6. Update README.md with the new operation description
+### 1. Add Operation to Enum
+Edit `nodes/TaddyPodcast/constants.ts`:
+```typescript
+export enum Operation {
+  // ... existing operations
+  YOUR_NEW_OPERATION = 'yourNewOperation',
+}
+```
+
+### 2. Create Query Handler File
+Create `nodes/TaddyPodcast/queries/yourNewOperation.ts`:
+```typescript
+import { INodeProperties, IExecuteFunctions, IDataObject } from 'n8n-workflow';
+import { Operation } from '../constants';
+import { requestWithRetry, standardizeResponse } from './shared';
+
+// Handler function
+export async function handleYourNewOperation(
+  itemIndex: number,
+  context: IExecuteFunctions,
+): Promise<IDataObject> {
+  // 1. Extract parameters
+  const param = context.getNodeParameter('paramName', itemIndex) as string;
+
+  // 2. Build GraphQL query
+  const query = `query { ... }`;
+
+  // 3. Make API request
+  const apiResponse = await requestWithRetry(query, { param }, context);
+
+  // 4. Return standardized response
+  return standardizeResponse(Operation.YOUR_NEW_OPERATION, {
+    // response data
+  });
+}
+
+// Field definitions
+export const yourNewOperationFields: INodeProperties[] = [
+  {
+    displayName: 'Parameter Name',
+    name: 'paramName',
+    type: 'string',
+    default: '',
+    displayOptions: {
+      show: {
+        operation: [Operation.YOUR_NEW_OPERATION],
+      },
+    },
+  },
+];
+```
+
+### 3. Update Central Router
+Edit `nodes/TaddyPodcast/queries/index.ts`:
+
+**Import the new handler:**
+```typescript
+import { yourNewOperationFields, handleYourNewOperation } from './yourNewOperation';
+```
+
+**Add to node description options:**
+```typescript
+options: [
+  // ... existing options
+  {
+    name: 'Your New Operation',
+    value: Operation.YOUR_NEW_OPERATION,
+    description: 'Description of what this does',
+    action: 'Action description',
+  },
+]
+```
+
+**Add fields to properties:**
+```typescript
+properties: [
+  // ... existing fields
+  ...yourNewOperationFields,
+],
+```
+
+**Add case to handleOperation() switch:**
+```typescript
+case Operation.YOUR_NEW_OPERATION:
+  return handleYourNewOperation(itemIndex, context);
+```
+
+### 4. Test and Document
+- Build the project: `npm run build`
+- Test manually in n8n
+- Update README.md with the new operation description
+- Add examples and usage notes if needed
+
+This modular approach keeps each operation isolated in its own file, making the codebase easier to maintain and test.

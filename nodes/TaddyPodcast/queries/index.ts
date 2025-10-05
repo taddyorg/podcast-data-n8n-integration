@@ -1,10 +1,9 @@
 import { INodeTypeDescription, IExecuteFunctions, IDataObject, NodeOperationError } from 'n8n-workflow';
 import { Operation } from '../constants';
-import { maxResultsField } from './shared';
 import { searchFields, handleSearch } from './search';
-import { getPodcastByUuidFields, handleGetPodcastByUuid } from './getPodcastByUuid';
+import { getPodcastSeriesFields, handleGetPodcastSeries } from './getPodcastSeries';
 import { getMultiplePodcastsFields, handleGetMultiplePodcasts } from './getMultiplePodcasts';
-import { getPodcastEpisodesFields, handleGetPodcastEpisodes } from './getPodcastEpisodes';
+import { getEpisodesForPodcastSeriesFields, handleGetEpisodesForPodcastSeries } from './getEpisodesForPodcastSeries';
 import { getLatestEpisodesFields, handleGetLatestEpisodes } from './getLatestEpisodes';
 import { getPopularPodcastsFields, handleGetPopularPodcasts } from './getPopularPodcasts';
 import { getTopChartsFields, handleGetTopCharts } from './getTopCharts';
@@ -45,10 +44,52 @@ export const taddyPodcastDescription: INodeTypeDescription = {
 					action: 'Search for a podcast with advanced filters',
 				},
 				{
-					name: 'Search Episodes',
+					name: 'Search for an episode',
 					value: Operation.SEARCH_EPISODES,
 					description: 'Search for episodes with advanced filters',
 					action: 'Search for episodes with advanced filters',
+				},
+				{
+					name: 'Get Podcast Details',
+					value: Operation.GET_PODCAST_SERIES,
+					description: 'Get details about a podcast by its UUID, Name, RSS URL, or iTunes ID',
+					action: 'Get details about a podcast',
+				},
+				{
+					name: 'Get Podcast Episodes',
+					value: Operation.GET_EPISODES_FOR_PODCAST_SERIES,
+					description: 'Get a list of episodes for a specific podcast',
+					action: 'Get a list of episodes for a specific Podcast',
+				},
+				{
+					name: 'Get Latest Episodes from multiple Podcasts',
+					value: Operation.GET_LATEST_EPISODES,
+					description: 'Get newly released episodes from multiple podcasts',
+					action: 'Get newly released episodes from multiple podcasts',
+				},
+				{
+					name: 'Get Episode Transcript',
+					value: Operation.GET_EPISODE_TRANSCRIPT,
+					description: 'Extract transcript from a specific episode (uses credits)',
+					action: 'Extract transcript from a specific episode',
+				},
+				{
+					name: 'Get Most Popular Podcasts',
+					value: Operation.GET_POPULAR_PODCASTS,
+					description: 'Get popular podcasts by genre or language',
+					action: 'Get popular podcasts by genre or language',
+				},
+				{
+					name: 'Get Daily Top Charts',
+					value: Operation.GET_DAILY_TOP_CHARTS,
+					description: 'Get top podcast charts by genre',
+					action: 'Get top podcast charts by genre',
+				},
+				{
+					name: 'Get Multiple Podcasts',
+					value: Operation.GET_MULTIPLE_PODCASTS,
+					description: 'Get information about multiple podcasts by UUID',
+					action: 'Get information about multiple podcasts by UUID',
 				},
 				{
 					name: 'Check Taddy API Requests Remaining',
@@ -62,55 +103,12 @@ export const taddyPodcastDescription: INodeTypeDescription = {
 					description: 'Check the number of transcript credits you have remaining',
 					action: 'Check transcript credits remaining',
 				},
-				{
-					name: 'Get Episode Transcript',
-					value: Operation.GET_EPISODE_TRANSCRIPT,
-					description: 'Extract transcript from a specific episode (uses credits)',
-					action: 'Extract transcript from a specific episode',
-				},
-				{
-					name: 'Get Latest Episodes',
-					value: Operation.GET_LATEST_EPISODES,
-					description: 'Get newly released episodes from multiple podcasts',
-					action: 'Get newly released episodes from multiple podcasts',
-				},
-				{
-					name: 'Get Multiple Podcasts',
-					value: Operation.GET_MULTIPLE_PODCASTS,
-					description: 'Get information about multiple podcasts by UUID',
-					action: 'Get information about multiple podcasts by UUID',
-				},
-				{
-					name: 'Get Podcast by UUID',
-					value: Operation.GET_PODCAST_BY_UUID,
-					description: 'Get detailed information about a specific podcast',
-					action: 'Get detailed information about a specific podcast',
-				},
-				{
-					name: 'Get Podcast Episodes',
-					value: Operation.GET_PODCAST_EPISODES,
-					description: 'Get episodes list for a specific podcast',
-					action: 'Get episodes for a specific podcast',
-				},
-				{
-					name: 'Get Popular Podcasts',
-					value: Operation.GET_POPULAR_PODCASTS,
-					description: 'Get popular podcasts by genre or language',
-					action: 'Get popular podcasts by genre or language',
-				},
-				{
-					name: 'Get Top Charts',
-					value: Operation.GET_DAILY_TOP_CHARTS,
-					description: 'Get top podcast charts by genre',
-					action: 'Get top podcast charts by genre',
-				},
 			],
 		},
-		maxResultsField,
 		...searchFields,
-		...getPodcastByUuidFields,
+		...getPodcastSeriesFields,
 		...getMultiplePodcastsFields,
-		...getPodcastEpisodesFields,
+		...getEpisodesForPodcastSeriesFields,
 		...getLatestEpisodesFields,
 		...getPopularPodcastsFields,
 		...getTopChartsFields,
@@ -159,11 +157,11 @@ export async function handleOperation(
 		case Operation.SEARCH_EPISODES:
 			return handleSearch(itemIndex, 'searchEpisodes', context);
 
-		case Operation.GET_PODCAST_BY_UUID:
-			return handleGetPodcastByUuid(itemIndex, context);
+		case Operation.GET_PODCAST_SERIES:
+			return handleGetPodcastSeries(itemIndex, context);
 
-		case Operation.GET_PODCAST_EPISODES:
-			return handleGetPodcastEpisodes(itemIndex, context);
+		case Operation.GET_EPISODES_FOR_PODCAST_SERIES:
+			return handleGetEpisodesForPodcastSeries(itemIndex, context);
 
 		case Operation.GET_EPISODE_TRANSCRIPT:
 			return handleGetEpisodeTranscript(itemIndex, context);

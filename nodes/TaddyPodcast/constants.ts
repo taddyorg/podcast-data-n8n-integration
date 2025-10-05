@@ -12,8 +12,8 @@ export enum Operation {
 	GET_EPISODE_TRANSCRIPT = 'getEpisodeTranscript',
 	GET_LATEST_EPISODES = 'getLatestEpisodes',
 	GET_MULTIPLE_PODCASTS = 'getMultiplePodcasts',
-	GET_PODCAST_BY_UUID = 'getPodcastByUuid',
-	GET_PODCAST_EPISODES = 'getPodcastEpisodes',
+	GET_PODCAST_SERIES = 'getPodcastSeries',
+	GET_EPISODES_FOR_PODCAST_SERIES = 'getEpisodesForPodcastSeries',
 	GET_POPULAR_PODCASTS = 'getPopularPodcasts',
 	GET_DAILY_TOP_CHARTS = 'getDailyTopCharts',
 }
@@ -148,6 +148,16 @@ export const EPISODE_FRAGMENT = `
 	datePublished
 `;
 
+export const EPISODE_WITH_TRANSCRIPT_FRAGMENT = `
+	uuid
+	name
+	description
+	audioUrl
+	duration
+	datePublished
+	transcript
+`;
+
 export const EPISODE_EXTENDED_FRAGMENT = `
 	uuid
 	name
@@ -203,9 +213,4 @@ export const LANGUAGE_OPTIONS = [
 	{ name: 'Russian', value: 'RUSSIAN' },
 	{ name: 'Spanish', value: 'SPANISH' },
 	{ name: 'Swedish', value: 'SWEDISH' },
-];
-
-export const LANGUAGE_OPTIONS_WITH_ALL = [
-	{ name: 'All Languages', value: '' },
-	...LANGUAGE_OPTIONS,
 ];

@@ -1,5 +1,5 @@
 import { INodeProperties, IExecuteFunctions, IDataObject } from 'n8n-workflow';
-import { Operation, PodcastEpisode, EPISODE_FRAGMENT, PODCAST_SERIES_MINI_FRAGMENT } from '../constants';
+import { Operation, PodcastEpisode, EPISODE_FRAGMENT, EPISODE_WITH_TRANSCRIPT_FRAGMENT, PODCAST_SERIES_MINI_FRAGMENT } from '../constants';
 import { requestWithRetry, standardizeResponse, parseAndValidateUuids } from './shared';
 
 // ============================================================================
@@ -11,6 +11,9 @@ export async function handleGetLatestEpisodes(
 	context: IExecuteFunctions,
 ): Promise<IDataObject> {
 	const inputType = context.getNodeParameter('latestEpisodesInputType', itemIndex) as string;
+	const includeTranscript = context.getNodeParameter('includeTranscript', itemIndex, true) as boolean;
+	const includePodcastDetails = context.getNodeParameter('includePodcastDetails', itemIndex, true) as boolean;
+
 	let uuids: string[] = [];
 	let rssUrls: string[] = [];
 
@@ -25,13 +28,19 @@ export async function handleGetLatestEpisodes(
 			.filter(u => u);
 	}
 
+	// Dynamically build episode fragment based on includeTranscript
+	const episodeFragment = includeTranscript ? EPISODE_WITH_TRANSCRIPT_FRAGMENT : EPISODE_FRAGMENT;
+
+	// Dynamically build podcast series block based on includePodcastDetails
+	const podcastSeriesBlock = includePodcastDetails ? `
+				podcastSeries {
+					${PODCAST_SERIES_MINI_FRAGMENT}
+				}` : '';
+
 	const query = `
 		query GetLatestEpisodes($uuids: [ID], $rssUrls: [String]) {
 			getLatestPodcastEpisodes(uuids: $uuids, rssUrls: $rssUrls) {
-				${EPISODE_FRAGMENT}
-				podcastSeries {
-					${PODCAST_SERIES_MINI_FRAGMENT}
-				}
+				${episodeFragment}${podcastSeriesBlock}
 			}
 		}
 	`;
@@ -98,6 +107,30 @@ export const getLatestEpisodesFields: INodeProperties[] = [
 			show: {
 				operation: [Operation.GET_LATEST_EPISODES],
 				latestEpisodesInputType: ['rssUrls'],
+			},
+		},
+	},
+	{
+		displayName: 'Include Transcript for each episode',
+		name: 'includeTranscript',
+		type: 'boolean',
+		default: true,
+		description: 'Whether to include episode transcripts in the response',
+		displayOptions: {
+			show: {
+				operation: [Operation.GET_LATEST_EPISODES],
+			},
+		},
+	},
+	{
+		displayName: 'Include Podcast Details for each episode',
+		name: 'includePodcastDetails',
+		type: 'boolean',
+		default: true,
+		description: 'Whether to include podcast series information for each episode',
+		displayOptions: {
+			show: {
+				operation: [Operation.GET_LATEST_EPISODES],
 			},
 		},
 	},

@@ -5,29 +5,23 @@ import { Operation, ApiResponse, API_BASE_URL, MAX_RETRIES } from '../constants'
 // UI Field Definitions
 // ============================================================================
 
-export const maxResultsField: INodeProperties = {
+export const maxResultsField = (defaultValue: number, max: number, operations: Operation[]): INodeProperties => ({
 	displayName: 'Max Results',
 	name: 'maxResults',
 	type: 'number',
-	default: 10,
-	description: 'Maximum number of results to return (1-25)',
+	default: defaultValue,
+	description: `Maximum number of results to return (1-${max})`,
 	hint: 'Passed directly to API for efficient data retrieval',
 	typeOptions: {
 		minValue: 1,
-		maxValue: 25,
+		maxValue: max,
 	},
 	displayOptions: {
 		show: {
-			operation: [
-				Operation.SEARCH_PODCASTS,
-				Operation.SEARCH_EPISODES,
-				Operation.GET_PODCAST_EPISODES,
-				Operation.GET_POPULAR_PODCASTS,
-				Operation.GET_DAILY_TOP_CHARTS,
-			],
+			operation: operations,
 		},
 	},
-};
+});
 
 // ============================================================================
 // Helper Functions
