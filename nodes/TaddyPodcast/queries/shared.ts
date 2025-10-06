@@ -1,13 +1,15 @@
 import { INodeProperties, IExecuteFunctions, IDataObject, NodeOperationError } from 'n8n-workflow';
-import { Operation, ApiResponse, API_BASE_URL, MAX_RETRIES, GENRE_HIERARCHY, PaginationConfig } from '../constants';
+import { Operation, ApiResponse, API_BASE_URL, MAX_RETRIES, GENRE_HIERARCHY, PAGINATION_CONFIGS } from '../constants';
 
 // ============================================================================
 // UI Field Definitions
 // ============================================================================
 
-export const numResultsField = (defaultValue: number, paginationConfig: PaginationConfig | undefined, operations: Operation[]): INodeProperties => {
+export const numResultsField = (defaultValue: number, operation: Operation): INodeProperties => {
+	const paginationConfig = PAGINATION_CONFIGS[operation];
+
 	if (!paginationConfig) {
-		throw new Error(`Pagination config is required for operations: ${operations.join(', ')}`);
+		throw new Error(`Pagination config is required for operation: ${operation}`);
 	}
 	
 	return {
@@ -23,7 +25,7 @@ export const numResultsField = (defaultValue: number, paginationConfig: Paginati
 		},
 		displayOptions: {
 			show: {
-				operation: operations,
+				operation: [operation],
 			},
 		},
 	};
@@ -199,6 +201,7 @@ export async function requestWithRetry(
 
 /**
  * Makes paginated API requests and aggregates results
+ * @param operation - Operation name
  * @param query - GraphQL query string (must include $page and $limitPerPage variables)
  * @param variables - Query variables (excluding page and limitPerPage)
  * @param context - n8n execution context
@@ -208,13 +211,14 @@ export async function requestWithRetry(
  * @returns Aggregated API response with all results
  */
 export async function requestWithPagination(
+	operation: Operation,
 	query: string,
 	variables: IDataObject | undefined,
 	context: IExecuteFunctions,
-	paginationConfig: PaginationConfig | undefined,
 	numResults: number,
 	resultPath: string,
 ): Promise<ApiResponse> {
+	const paginationConfig = PAGINATION_CONFIGS[operation];
 	if (!paginationConfig) { throw new NodeOperationError(context.getNode(), 'Pagination is not supported for this operation'); }
 	// Ensure maxResults doesn't exceed API limits
 	const cappedMaxResults = Math.min(numResults, paginationConfig.limitPerPage * paginationConfig.maxPages);

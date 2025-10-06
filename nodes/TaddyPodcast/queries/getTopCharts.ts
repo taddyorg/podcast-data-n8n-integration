@@ -1,5 +1,5 @@
 import { INodeProperties, IExecuteFunctions, IDataObject, NodeOperationError } from 'n8n-workflow';
-import { Operation, GENRE_OPTIONS, PodcastSeries, PODCAST_SERIES_FRAGMENT, PAGINATION_CONFIGS } from '../constants';
+import { Operation, GENRE_OPTIONS, PodcastSeries, PODCAST_SERIES_FRAGMENT } from '../constants';
 import { numResultsField, requestWithPagination, standardizeResponse } from './shared';
 
 // ============================================================================
@@ -11,7 +11,7 @@ export async function handleGetTopCharts(
 	context: IExecuteFunctions,
 ): Promise<IDataObject> {
 	const numResults = context.getNodeParameter('numResults', itemIndex) as number;
-	const genres = context.getNodeParameter('popularGenres', itemIndex) as string[];
+	const genres = context.getNodeParameter('genres', itemIndex) as string[];
 
 	const query = `
 		query GetTopCharts($genres: [Genre!], $page: Int, $limitPerPage: Int) {
@@ -38,10 +38,10 @@ export async function handleGetTopCharts(
 	};
 
 	const apiResponse = await requestWithPagination(
+		Operation.GET_DAILY_TOP_CHARTS,
 		query,
 		variables,
 		context,
-		PAGINATION_CONFIGS[Operation.GET_DAILY_TOP_CHARTS],
 		numResults,
 		'getTopChartsByGenres'
 	);
@@ -62,10 +62,10 @@ export async function handleGetTopCharts(
 // ============================================================================
 
 export const getTopChartsFields: INodeProperties[] = [
-	numResultsField(10, PAGINATION_CONFIGS[Operation.GET_DAILY_TOP_CHARTS], [Operation.GET_DAILY_TOP_CHARTS]),
+	numResultsField(10, Operation.GET_DAILY_TOP_CHARTS),
 	{
 		displayName: 'Filter by Genres',
-		name: 'popularGenres',
+		name: 'genres',
 		type: 'multiOptions',
 		options: GENRE_OPTIONS,
 		default: [],

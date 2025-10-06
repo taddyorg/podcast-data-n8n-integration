@@ -1,6 +1,7 @@
 import { INodeTypeDescription, IExecuteFunctions, IDataObject, NodeOperationError } from 'n8n-workflow';
 import { Operation } from '../constants';
-import { searchFields, handleSearch } from './search';
+import { searchPodcastsFields, handleSearchPodcasts } from './searchPodcasts';
+import { searchEpisodesFields, handleSearchEpisodes } from './searchEpisodes';
 import { getPodcastSeriesFields, handleGetPodcastSeries } from './getPodcastSeries';
 import { getMultiplePodcastsFields, handleGetMultiplePodcasts } from './getMultiplePodcasts';
 import { getEpisodesForPodcastSeriesFields, handleGetEpisodesForPodcastSeries } from './getPodcastSeriesWithEpisodes';
@@ -105,7 +106,8 @@ export const taddyPodcastDescription: INodeTypeDescription = {
 				},
 			],
 		},
-		...searchFields,
+		...searchPodcastsFields,
+		...searchEpisodesFields,
 		...getPodcastSeriesFields,
 		...getMultiplePodcastsFields,
 		...getEpisodesForPodcastSeriesFields,
@@ -152,10 +154,10 @@ export async function handleOperation(
 			return handleGetTopCharts(itemIndex, context);
 
 		case Operation.SEARCH_PODCASTS:
-			return handleSearch(itemIndex, 'searchPodcasts', context);
+			return handleSearchPodcasts(itemIndex, context);
 
 		case Operation.SEARCH_EPISODES:
-			return handleSearch(itemIndex, 'searchEpisodes', context);
+			return handleSearchEpisodes(itemIndex, context);
 
 		case Operation.GET_PODCAST_SERIES:
 			return handleGetPodcastSeries(itemIndex, context);

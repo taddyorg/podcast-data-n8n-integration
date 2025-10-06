@@ -66,10 +66,22 @@ export interface SearchVariables extends IDataObject {
 	filterForTypes?: string[];
 	filterForGenres?: string[];
 	filterForLanguages?: string[];
+	filterForCountries?: string[];
 	matchBy?: string;
 	sortBy?: string;
 	filterForHasTranscript?: boolean;
 	filterForPublishedAfter?: number;
+	filterForPublishedBefore?: number;
+	filterForPodcastContentType?: string[];
+	isSafeMode?: boolean;
+	filterForDurationGreaterThan?: number;
+	filterForDurationLessThan?: number;
+	filterForTotalEpisodesGreaterThan?: number;
+	filterForTotalEpisodesLessThan?: number;
+	filterForLastUpdatedAfter?: number;
+	filterForLastUpdatedBefore?: number;
+	filterForSeriesUuids?: string[];
+	filterForNotInSeriesUuids?: string[];
 }
 
 export interface ApiResponse {
@@ -367,6 +379,11 @@ export const GENRE_HIERARCHY: Record<string, string[]> = {
 		'PODCASTSERIES_TV_AND_FILM_TV_REVIEWS',
 	],
 };
+
+export const PODCAST_CONTENT_TYPE_OPTIONS = [
+	{ name: 'Audio Podcasts', value: 'AUDIO' },
+	{ name: 'Video Podcasts', value: 'VIDEO' },
+];
 
 export const LANGUAGE_OPTIONS = [
 	// Most popular languages for podcasts

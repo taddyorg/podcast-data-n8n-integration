@@ -1,5 +1,5 @@
 import { INodeProperties, IExecuteFunctions, IDataObject, NodeOperationError } from 'n8n-workflow';
-import { Operation, PodcastEpisode, EPISODE_EXTENDED_FRAGMENT, EPISODE_WITH_TRANSCRIPT_FRAGMENT, PODCAST_SERIES_MINI_FRAGMENT, PAGINATION_CONFIGS } from '../constants';
+import { Operation, PodcastEpisode, EPISODE_EXTENDED_FRAGMENT, EPISODE_WITH_TRANSCRIPT_FRAGMENT, PODCAST_SERIES_MINI_FRAGMENT } from '../constants';
 import { includeTranscriptField, numResultsField, requestWithPagination, standardizeResponse, validateUuid } from './shared';
 
 // ============================================================================
@@ -95,7 +95,7 @@ export async function handleGetEpisodesForPodcastSeries(
 	context: IExecuteFunctions,
 ): Promise<IDataObject> {
 	const inputType = context.getNodeParameter('episodesInputType', itemIndex) as InputType;
-	const maxResults = context.getNodeParameter('maxResults', itemIndex) as number;
+	const numResults = context.getNodeParameter('numResults', itemIndex) as number;
 	const includeTranscript = context.getNodeParameter('includeTranscript', itemIndex, true) as boolean;
 
 	// Validate input and get query parameters
@@ -120,11 +120,11 @@ export async function handleGetEpisodesForPodcastSeries(
 	};
 
 	const apiResponse = await requestWithPagination(
+		Operation.GET_EPISODES_FOR_PODCAST_SERIES,
 		query,
 		variables,
 		context,
-		PAGINATION_CONFIGS[Operation.GET_EPISODES_FOR_PODCAST_SERIES]!,
-		maxResults,
+		numResults,
 		'getPodcastSeries.episodes'
 	);
 	const podcast = apiResponse.data?.getPodcastSeries as { uuid: string; name: string; episodes: PodcastEpisode[] };
@@ -236,6 +236,6 @@ export const getEpisodesForPodcastSeriesFields: INodeProperties[] = [
 			},
 		},
 	},
-	numResultsField(10, PAGINATION_CONFIGS[Operation.GET_EPISODES_FOR_PODCAST_SERIES], [Operation.GET_EPISODES_FOR_PODCAST_SERIES]),
+	numResultsField(10, Operation.GET_EPISODES_FOR_PODCAST_SERIES),
 	includeTranscriptField(true, [Operation.GET_EPISODES_FOR_PODCAST_SERIES]),
 ];

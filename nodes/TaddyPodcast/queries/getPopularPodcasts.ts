@@ -1,5 +1,5 @@
 import { INodeProperties, IExecuteFunctions, IDataObject } from 'n8n-workflow';
-import { Operation, GENRE_OPTIONS, LANGUAGE_OPTIONS, PodcastSeries, PODCAST_SERIES_FRAGMENT, PAGINATION_CONFIGS } from '../constants';
+import { Operation, GENRE_OPTIONS, LANGUAGE_OPTIONS, PodcastSeries, PODCAST_SERIES_FRAGMENT } from '../constants';
 import { requestWithPagination, standardizeResponse, numResultsField } from './shared';
 
 // ============================================================================
@@ -11,8 +11,8 @@ export async function handleGetPopularPodcasts(
 	context: IExecuteFunctions,
 ): Promise<IDataObject> {
 	const numResults = context.getNodeParameter('numResults', itemIndex) as number;
-	const genres = context.getNodeParameter('popularGenres', itemIndex) as string[];
-	const language = context.getNodeParameter('popularLanguage', itemIndex) as string;
+	const genres = context.getNodeParameter('genres', itemIndex) as string[];
+	const language = context.getNodeParameter('language', itemIndex) as string;
 
 	const query = `
 		query GetPopularContent($filterByGenres: [Genre!], $filterByLanguage: Language, $page: Int, $limitPerPage: Int) {
@@ -37,10 +37,10 @@ export async function handleGetPopularPodcasts(
 	if (language) variables.filterByLanguage = language;
 
 	const apiResponse = await requestWithPagination(
+		Operation.GET_POPULAR_PODCASTS,
 		query,
 		variables,
 		context,
-		PAGINATION_CONFIGS[Operation.GET_POPULAR_PODCASTS]!,
 		numResults,
 		'getPopularContent'
 	);
@@ -63,10 +63,10 @@ export async function handleGetPopularPodcasts(
 // ============================================================================
 
 export const getPopularPodcastsFields: INodeProperties[] = [
-	numResultsField(10, PAGINATION_CONFIGS[Operation.GET_POPULAR_PODCASTS]!, [Operation.GET_POPULAR_PODCASTS]),
+	numResultsField(10, Operation.GET_POPULAR_PODCASTS),
 	{
 		displayName: 'Filter by Genres',
-		name: 'popularGenres',
+		name: 'genres',
 		type: 'multiOptions',
 		options: GENRE_OPTIONS,
 		default: [],
@@ -79,7 +79,7 @@ export const getPopularPodcastsFields: INodeProperties[] = [
 	},
 	{
 		displayName: 'Filter by Language',
-		name: 'popularLanguage',
+		name: 'language',
 		type: 'options',
 		options: LANGUAGE_OPTIONS,
 		default: '',

@@ -1,5 +1,5 @@
 import { INodeProperties, IExecuteFunctions, IDataObject } from 'n8n-workflow';
-import { Operation, PodcastEpisode, EPISODE_FRAGMENT, EPISODE_WITH_TRANSCRIPT_FRAGMENT, PODCAST_SERIES_MINI_FRAGMENT, PAGINATION_CONFIGS } from '../constants';
+import { Operation, PodcastEpisode, EPISODE_FRAGMENT, EPISODE_WITH_TRANSCRIPT_FRAGMENT, PODCAST_SERIES_MINI_FRAGMENT } from '../constants';
 import { requestWithPagination, standardizeResponse, parseAndValidateUuids, includeTranscriptField, numResultsField } from './shared';
 
 // ============================================================================
@@ -47,10 +47,10 @@ export async function handleGetLatestEpisodes(
 	if (rssUrls.length > 0) variables.rssUrls = rssUrls;
 
 	const apiResponse = await requestWithPagination(
+		Operation.GET_LATEST_EPISODES,
 		query,
 		variables,
 		context,
-		PAGINATION_CONFIGS[Operation.GET_LATEST_EPISODES],
 		numResults,
 		'getLatestPodcastEpisodes'
 	);
@@ -85,7 +85,6 @@ export const getLatestEpisodesFields: INodeProperties[] = [
 			},
 		},
 	},
-	numResultsField(50, PAGINATION_CONFIGS[Operation.GET_LATEST_EPISODES], [Operation.GET_LATEST_EPISODES]),
 	{
 		displayName: 'Podcast UUIDs',
 		name: 'latestEpisodesUuids',
@@ -115,5 +114,6 @@ export const getLatestEpisodesFields: INodeProperties[] = [
 			},
 		},
 	},
+	numResultsField(50, Operation.GET_LATEST_EPISODES),
 	includeTranscriptField(true, [Operation.GET_LATEST_EPISODES]),
 ];
