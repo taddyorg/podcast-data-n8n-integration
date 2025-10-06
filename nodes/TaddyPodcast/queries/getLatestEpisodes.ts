@@ -1,6 +1,6 @@
 import { INodeProperties, IExecuteFunctions, IDataObject } from 'n8n-workflow';
-import { Operation, PodcastEpisode, EPISODE_FRAGMENT, EPISODE_WITH_TRANSCRIPT_FRAGMENT, PODCAST_SERIES_MINI_FRAGMENT } from '../constants';
-import { requestWithRetry, standardizeResponse, parseAndValidateUuids } from './shared';
+import { Operation, PodcastEpisode, EPISODE_FRAGMENT, EPISODE_WITH_TRANSCRIPT_FRAGMENT, PODCAST_SERIES_MINI_FRAGMENT, PAGINATION_CONFIGS } from '../constants';
+import { requestWithPagination, standardizeResponse, parseAndValidateUuids, includeTranscriptField, numResultsField } from './shared';
 
 // ============================================================================
 // Handler Function
@@ -11,8 +11,8 @@ export async function handleGetLatestEpisodes(
 	context: IExecuteFunctions,
 ): Promise<IDataObject> {
 	const inputType = context.getNodeParameter('latestEpisodesInputType', itemIndex) as string;
+	const numResults = context.getNodeParameter('numResults', itemIndex, 50) as number;
 	const includeTranscript = context.getNodeParameter('includeTranscript', itemIndex, true) as boolean;
-	const includePodcastDetails = context.getNodeParameter('includePodcastDetails', itemIndex, true) as boolean;
 
 	let uuids: string[] = [];
 	let rssUrls: string[] = [];
@@ -31,16 +31,13 @@ export async function handleGetLatestEpisodes(
 	// Dynamically build episode fragment based on includeTranscript
 	const episodeFragment = includeTranscript ? EPISODE_WITH_TRANSCRIPT_FRAGMENT : EPISODE_FRAGMENT;
 
-	// Dynamically build podcast series block based on includePodcastDetails
-	const podcastSeriesBlock = includePodcastDetails ? `
+	const query = `
+		query GetLatestEpisodes($uuids: [ID], $rssUrls: [String], $page: Int, $limitPerPage: Int) {
+			getLatestPodcastEpisodes(uuids: $uuids, rssUrls: $rssUrls, page: $page, limitPerPage: $limitPerPage) {
+				${episodeFragment}
 				podcastSeries {
 					${PODCAST_SERIES_MINI_FRAGMENT}
-				}` : '';
-
-	const query = `
-		query GetLatestEpisodes($uuids: [ID], $rssUrls: [String]) {
-			getLatestPodcastEpisodes(uuids: $uuids, rssUrls: $rssUrls) {
-				${episodeFragment}${podcastSeriesBlock}
+				}
 			}
 		}
 	`;
@@ -49,7 +46,14 @@ export async function handleGetLatestEpisodes(
 	if (uuids.length > 0) variables.uuids = uuids;
 	if (rssUrls.length > 0) variables.rssUrls = rssUrls;
 
-	const apiResponse = await requestWithRetry(query, variables, context);
+	const apiResponse = await requestWithPagination(
+		query,
+		variables,
+		context,
+		PAGINATION_CONFIGS[Operation.GET_LATEST_EPISODES],
+		numResults,
+		'getLatestPodcastEpisodes'
+	);
 
 	const episodes = (apiResponse.data?.getLatestPodcastEpisodes as PodcastEpisode[]) || [];
 	return standardizeResponse(Operation.GET_LATEST_EPISODES, {
@@ -81,6 +85,7 @@ export const getLatestEpisodesFields: INodeProperties[] = [
 			},
 		},
 	},
+	numResultsField(50, PAGINATION_CONFIGS[Operation.GET_LATEST_EPISODES], [Operation.GET_LATEST_EPISODES]),
 	{
 		displayName: 'Podcast UUIDs',
 		name: 'latestEpisodesUuids',
@@ -110,28 +115,5 @@ export const getLatestEpisodesFields: INodeProperties[] = [
 			},
 		},
 	},
-	{
-		displayName: 'Include Transcript for each episode',
-		name: 'includeTranscript',
-		type: 'boolean',
-		default: true,
-		description: 'Whether to include episode transcripts in the response',
-		displayOptions: {
-			show: {
-				operation: [Operation.GET_LATEST_EPISODES],
-			},
-		},
-	},
-	{
-		displayName: 'Include Podcast Details for each episode',
-		name: 'includePodcastDetails',
-		type: 'boolean',
-		default: true,
-		description: 'Whether to include podcast series information for each episode',
-		displayOptions: {
-			show: {
-				operation: [Operation.GET_LATEST_EPISODES],
-			},
-		},
-	},
+	includeTranscriptField(true, [Operation.GET_LATEST_EPISODES]),
 ];

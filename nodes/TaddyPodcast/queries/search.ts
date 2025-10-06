@@ -1,6 +1,6 @@
 import { INodeProperties, IExecuteFunctions, IDataObject } from 'n8n-workflow';
-import { Operation, GENRE_OPTIONS, LANGUAGE_OPTIONS, SearchVariables, PodcastSeries, MAX_API_LIMIT, PODCAST_SERIES_EXTENDED_FRAGMENT, EPISODE_EXTENDED_FRAGMENT, PODCAST_SERIES_MINI_FRAGMENT, PodcastEpisode } from '../constants';
-import { requestWithRetry, standardizeResponse, parseDate, maxResultsField } from './shared';
+import { Operation, GENRE_OPTIONS, LANGUAGE_OPTIONS, SearchVariables, PodcastSeries, PODCAST_SERIES_EXTENDED_FRAGMENT, EPISODE_EXTENDED_FRAGMENT, PODCAST_SERIES_MINI_FRAGMENT, PodcastEpisode, PAGINATION_CONFIGS } from '../constants';
+import { requestWithPagination, standardizeResponse, parseDate, numResultsField, expandGenres } from './shared';
 
 // ============================================================================
 // Handler Function
@@ -21,7 +21,9 @@ export async function handleSearch(
 		: ['PODCASTEPISODE'];
 
 	if (advancedOptions.filterForGenres) {
-		variables.filterForGenres = advancedOptions.filterForGenres as string[];
+		// Expand top-level genres to include all their subgenres
+		const selectedGenres = advancedOptions.filterForGenres as string[];
+		variables.filterForGenres = expandGenres(selectedGenres);
 	}
 	if (advancedOptions.filterForLanguages) {
 		variables.filterForLanguages = advancedOptions.filterForLanguages as string[];
@@ -50,6 +52,8 @@ export async function handleSearch(
 			$sortBy: SearchSortOrder
 			$filterForHasTranscript: Boolean
 			$filterForPublishedAfter: Int
+			$page: Int
+			$limitPerPage: Int
 		) {
 			search(
 				term: $term
@@ -60,7 +64,8 @@ export async function handleSearch(
 				sortBy: $sortBy
 				filterForHasTranscript: $filterForHasTranscript
 				filterForPublishedAfter: $filterForPublishedAfter
-				limitPerPage: ${Math.min(maxResults, MAX_API_LIMIT)}
+				page: $page
+				limitPerPage: $limitPerPage
 			) {
 				searchId
 				${operationType === 'searchPodcasts'
@@ -78,7 +83,15 @@ export async function handleSearch(
 		}
 	`;
 
-	const apiResponse = await requestWithRetry(query, variables, context);
+	const resultPath = operationType === 'searchPodcasts' ? 'search.podcastSeries' : 'search.podcastEpisodes';
+	const apiResponse = await requestWithPagination(
+		query,
+		variables,
+		context,
+		PAGINATION_CONFIGS[Operation.SEARCH_PODCASTS]!,
+		maxResults,
+		resultPath
+	);
 	const searchData = apiResponse.data?.search as IDataObject || {};
 
 	const podcastResults = searchData.podcastSeries as PodcastSeries[] || [];
@@ -119,7 +132,7 @@ export const searchFields: INodeProperties[] = [
 			},
 		},
 	},
-	maxResultsField(10, 25, [Operation.SEARCH_PODCASTS, Operation.SEARCH_EPISODES]),
+	numResultsField(10, PAGINATION_CONFIGS[Operation.SEARCH_PODCASTS], [Operation.SEARCH_PODCASTS, Operation.SEARCH_EPISODES]),
 	{
 		displayName: 'Advanced Options',
 		name: 'advancedOptions',

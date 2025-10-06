@@ -3,24 +3,28 @@ import { Operation, PODCAST_SERIES_EXTENDED_FRAGMENT } from '../constants';
 import { requestWithRetry, standardizeResponse, validateUuid } from './shared';
 
 // ============================================================================
-// Handler Function
+// Helper Functions
 // ============================================================================
 
-export async function handleGetPodcastSeries(
-	itemIndex: number,
-	context: IExecuteFunctions,
-): Promise<IDataObject> {
-	const inputType = context.getNodeParameter('inputType', itemIndex) as string;
+enum InputType {
+	UUID = 'uuid',
+	Name = 'name',
+	RssUrl = 'rssUrl',
+	ItunesId = 'itunesId',
+}
 
-	let queryVariable: string;
-	let queryVariableType: string;
-	let inputValue: string | number;
-	let inputLabel: string;
+interface InputValidationResult {
+	queryVariable: string;
+	queryVariableType: string;
+	inputValue: string | number;
+	inputLabel: string;
+}
 
+function validatePodcastInput(inputType: string, itemIndex: number, context: IExecuteFunctions): InputValidationResult {
 	// Determine which input type to use and validate accordingly
 	switch (inputType) {
-		case 'uuid':
-			inputValue = context.getNodeParameter('podcastUuid', itemIndex) as string;
+		case InputType.UUID: {
+			const inputValue = context.getNodeParameter('podcastUuid', itemIndex) as string;
 			if (!inputValue) {
 				throw new NodeOperationError(context.getNode(), 'Podcast UUID is required');
 			}
@@ -30,44 +34,70 @@ export async function handleGetPodcastSeries(
 					`Invalid UUID format: ${inputValue}. UUID must be in format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`,
 				);
 			}
-			queryVariable = 'uuid';
-			queryVariableType = 'ID!';
-			inputLabel = 'podcastUuid';
-			break;
+			return {
+				queryVariable: 'uuid',
+				queryVariableType: 'ID!',
+				inputValue,
+				inputLabel: 'podcastUuid',
+			};
+		}
 
-		case 'name':
-			inputValue = context.getNodeParameter('podcastName', itemIndex) as string;
+		case InputType.Name: {
+			const inputValue = context.getNodeParameter('podcastName', itemIndex) as string;
 			if (!inputValue) {
 				throw new NodeOperationError(context.getNode(), 'Podcast name is required');
 			}
-			queryVariable = 'name';
-			queryVariableType = 'String!';
-			inputLabel = 'podcastName';
-			break;
+			return {
+				queryVariable: 'name',
+				queryVariableType: 'String!',
+				inputValue,
+				inputLabel: 'podcastName',
+			};
+		}
 
-		case 'rssUrl':
-			inputValue = context.getNodeParameter('rssUrl', itemIndex) as string;
+		case InputType.RssUrl: {
+			const inputValue = context.getNodeParameter('rssUrl', itemIndex) as string;
 			if (!inputValue) {
 				throw new NodeOperationError(context.getNode(), 'RSS URL is required');
 			}
-			queryVariable = 'rssUrl';
-			queryVariableType = 'String!';
-			inputLabel = 'rssUrl';
-			break;
+			return {
+				queryVariable: 'rssUrl',
+				queryVariableType: 'String!',
+				inputValue,
+				inputLabel: 'rssUrl',
+			};
+		}
 
-		case 'itunesId':
-			inputValue = context.getNodeParameter('itunesId', itemIndex) as number;
+		case InputType.ItunesId: {
+			const inputValue = context.getNodeParameter('itunesId', itemIndex) as number;
 			if (!inputValue) {
 				throw new NodeOperationError(context.getNode(), 'iTunes ID is required');
 			}
-			queryVariable = 'itunesId';
-			queryVariableType = 'Int!';
-			inputLabel = 'itunesId';
-			break;
+			return {
+				queryVariable: 'itunesId',
+				queryVariableType: 'Int!',
+				inputValue,
+				inputLabel: 'itunesId',
+			};
+		}
 
 		default:
 			throw new NodeOperationError(context.getNode(), `Unknown input type: ${inputType}`);
 	}
+}
+
+// ============================================================================
+// Handler Function
+// ============================================================================
+
+export async function handleGetPodcastSeries(
+	itemIndex: number,
+	context: IExecuteFunctions,
+): Promise<IDataObject> {
+	const inputType = context.getNodeParameter('inputType', itemIndex) as string;
+
+	// Validate input and get query parameters
+	const { queryVariable, queryVariableType, inputValue, inputLabel } = validatePodcastInput(inputType, itemIndex, context);
 
 	const query = `
 		query getPodcastSeries($${queryVariable}: ${queryVariableType}) {
@@ -101,22 +131,22 @@ export const getPodcastSeriesFields: INodeProperties[] = [
 		options: [
 			{
 				name: 'UUID',
-				value: 'uuid',
+				value: InputType.UUID,
 				description: 'Get podcast by its unique identifier (UUID)',
 			},
 			{
 				name: 'Name',
-				value: 'name',
+				value: InputType.Name,
 				description: 'Get podcast by its title/name',
 			},
 			{
 				name: 'RSS URL',
-				value: 'rssUrl',
+				value: InputType.RssUrl,
 				description: 'Get podcast by its RSS feed URL',
 			},
 			{
 				name: 'iTunes ID',
-				value: 'itunesId',
+				value: InputType.ItunesId,
 				description: 'Get podcast by its iTunes ID',
 			},
 		],
@@ -137,7 +167,7 @@ export const getPodcastSeriesFields: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				operation: [Operation.GET_PODCAST_SERIES],
-				inputType: ['uuid'],
+				inputType: [InputType.UUID],
 			},
 		},
 	},
@@ -152,7 +182,7 @@ export const getPodcastSeriesFields: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				operation: [Operation.GET_PODCAST_SERIES],
-				inputType: ['name'],
+				inputType: [InputType.Name],
 			},
 		},
 	},
@@ -166,7 +196,7 @@ export const getPodcastSeriesFields: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				operation: [Operation.GET_PODCAST_SERIES],
-				inputType: ['rssUrl'],
+				inputType: [InputType.RssUrl],
 			},
 		},
 	},
@@ -180,7 +210,7 @@ export const getPodcastSeriesFields: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				operation: [Operation.GET_PODCAST_SERIES],
-				inputType: ['itunesId'],
+				inputType: [InputType.ItunesId],
 			},
 		},
 	},

@@ -1,27 +1,30 @@
 import { INodeProperties, IExecuteFunctions, IDataObject, NodeOperationError } from 'n8n-workflow';
-import { Operation, PodcastEpisode, EPISODE_EXTENDED_FRAGMENT, MAX_API_LIMIT, PODCAST_SERIES_MINI_FRAGMENT } from '../constants';
-import { maxResultsField, requestWithRetry, standardizeResponse, validateUuid } from './shared';
+import { Operation, PodcastEpisode, EPISODE_EXTENDED_FRAGMENT, EPISODE_WITH_TRANSCRIPT_FRAGMENT, PODCAST_SERIES_MINI_FRAGMENT, PAGINATION_CONFIGS } from '../constants';
+import { includeTranscriptField, numResultsField, requestWithPagination, standardizeResponse, validateUuid } from './shared';
 
 // ============================================================================
-// Handler Function
+// Helper Functions
 // ============================================================================
 
-export async function handleGetEpisodesForPodcastSeries(
-	itemIndex: number,
-	context: IExecuteFunctions,
-): Promise<IDataObject> {
-	const inputType = context.getNodeParameter('episodesInputType', itemIndex) as string;
-	const maxResults = context.getNodeParameter('maxResults', itemIndex, 25) as number;
+enum InputType {
+	UUID = 'uuid',
+	Name = 'name',
+	RssUrl = 'rssUrl',
+	ItunesId = 'itunesId',
+}
 
-	let queryVariable: string;
-	let queryVariableType: string;
-	let inputValue: string | number;
-	let inputLabel: string;
+interface InputValidationResult {
+	queryVariable: string;
+	queryVariableType: string;
+	inputValue: string | number;
+	inputLabel: string;
+}
 
+function validatePodcastInput(inputType: string, itemIndex: number, context: IExecuteFunctions): InputValidationResult {
 	// Determine which input type to use and validate accordingly
 	switch (inputType) {
-		case 'uuid':
-			inputValue = context.getNodeParameter('podcastUuid', itemIndex) as string;
+		case InputType.UUID: {
+			const inputValue = context.getNodeParameter('podcastUuid', itemIndex) as string;
 			if (!inputValue) {
 				throw new NodeOperationError(context.getNode(), 'Podcast UUID is required');
 			}
@@ -31,51 +34,82 @@ export async function handleGetEpisodesForPodcastSeries(
 					`Invalid UUID format: ${inputValue}. UUID must be in format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`,
 				);
 			}
-			queryVariable = 'uuid';
-			queryVariableType = 'ID!';
-			inputLabel = 'podcastUuid';
-			break;
+			return {
+				queryVariable: 'uuid',
+				queryVariableType: 'ID!',
+				inputValue,
+				inputLabel: 'podcastUuid',
+			};
+		}
 
-		case 'name':
-			inputValue = context.getNodeParameter('podcastName', itemIndex) as string;
+		case InputType.Name: {
+			const inputValue = context.getNodeParameter('podcastName', itemIndex) as string;
 			if (!inputValue) {
 				throw new NodeOperationError(context.getNode(), 'Podcast name is required');
 			}
-			queryVariable = 'name';
-			queryVariableType = 'String!';
-			inputLabel = 'podcastName';
-			break;
+			return {
+				queryVariable: 'name',
+				queryVariableType: 'String!',
+				inputValue,
+				inputLabel: 'podcastName',
+			};
+		}
 
-		case 'rssUrl':
-			inputValue = context.getNodeParameter('rssUrl', itemIndex) as string;
+		case InputType.RssUrl: {
+			const inputValue = context.getNodeParameter('rssUrl', itemIndex) as string;
 			if (!inputValue) {
 				throw new NodeOperationError(context.getNode(), 'RSS URL is required');
 			}
-			queryVariable = 'rssUrl';
-			queryVariableType = 'String!';
-			inputLabel = 'rssUrl';
-			break;
+			return {
+				queryVariable: 'rssUrl',
+				queryVariableType: 'String!',
+				inputValue,
+				inputLabel: 'rssUrl',
+			};
+		}
 
-		case 'itunesId':
-			inputValue = context.getNodeParameter('itunesId', itemIndex) as number;
+		case InputType.ItunesId: {
+			const inputValue = context.getNodeParameter('itunesId', itemIndex) as number;
 			if (!inputValue) {
 				throw new NodeOperationError(context.getNode(), 'iTunes ID is required');
 			}
-			queryVariable = 'itunesId';
-			queryVariableType = 'Int!';
-			inputLabel = 'itunesId';
-			break;
+			return {
+				queryVariable: 'itunesId',
+				queryVariableType: 'Int!',
+				inputValue,
+				inputLabel: 'itunesId',
+			};
+		}
 
 		default:
 			throw new NodeOperationError(context.getNode(), `Unknown input type: ${inputType}`);
 	}
+}
+
+// ============================================================================
+// Handler Function
+// ============================================================================
+
+export async function handleGetEpisodesForPodcastSeries(
+	itemIndex: number,
+	context: IExecuteFunctions,
+): Promise<IDataObject> {
+	const inputType = context.getNodeParameter('episodesInputType', itemIndex) as InputType;
+	const maxResults = context.getNodeParameter('maxResults', itemIndex) as number;
+	const includeTranscript = context.getNodeParameter('includeTranscript', itemIndex, true) as boolean;
+
+	// Validate input and get query parameters
+	const { queryVariable, queryVariableType, inputValue, inputLabel } = validatePodcastInput(inputType, itemIndex, context);
+
+	// Dynamically build episode fragment based on includeTranscript
+	const episodeFragment = includeTranscript ? EPISODE_WITH_TRANSCRIPT_FRAGMENT : EPISODE_EXTENDED_FRAGMENT;
 
 	const query = `
-		query GetPodcastEpisodes($${queryVariable}: ${queryVariableType}, $limitPerPage: Int!) {
+		query GetPodcastEpisodes($${queryVariable}: ${queryVariableType}, $page: Int, $limitPerPage: Int) {
 			getPodcastSeries(${queryVariable}: $${queryVariable}) {
 				${PODCAST_SERIES_MINI_FRAGMENT}
-				episodes(limitPerPage: $limitPerPage, sortOrder: LATEST) {
-					${EPISODE_EXTENDED_FRAGMENT}
+				episodes(page: $page, limitPerPage: $limitPerPage, sortOrder: LATEST) {
+					${episodeFragment}
 				}
 			}
 		}
@@ -83,10 +117,16 @@ export async function handleGetEpisodesForPodcastSeries(
 
 	const variables = {
 		[queryVariable]: inputValue,
-		limitPerPage: Math.min(maxResults, MAX_API_LIMIT)
 	};
 
-	const apiResponse = await requestWithRetry(query, variables, context);
+	const apiResponse = await requestWithPagination(
+		query,
+		variables,
+		context,
+		PAGINATION_CONFIGS[Operation.GET_EPISODES_FOR_PODCAST_SERIES]!,
+		maxResults,
+		'getPodcastSeries.episodes'
+	);
 	const podcast = apiResponse.data?.getPodcastSeries as { uuid: string; name: string; episodes: PodcastEpisode[] };
 	const episodes = podcast?.episodes || [];
 
@@ -113,22 +153,22 @@ export const getEpisodesForPodcastSeriesFields: INodeProperties[] = [
 		options: [
 			{
 				name: 'UUID',
-				value: 'uuid',
+				value: InputType.UUID,
 				description: 'Get episodes by podcast unique identifier (UUID)',
 			},
 			{
 				name: 'Name',
-				value: 'name',
+				value: InputType.Name,
 				description: 'Get episodes by podcast title/name',
 			},
 			{
 				name: 'RSS URL',
-				value: 'rssUrl',
+				value: InputType.RssUrl,
 				description: 'Get episodes by podcast RSS feed URL',
 			},
 			{
 				name: 'iTunes ID',
-				value: 'itunesId',
+				value: InputType.ItunesId,
 				description: 'Get episodes by podcast iTunes ID',
 			},
 		],
@@ -149,7 +189,7 @@ export const getEpisodesForPodcastSeriesFields: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				operation: [Operation.GET_EPISODES_FOR_PODCAST_SERIES],
-				episodesInputType: ['uuid'],
+				episodesInputType: [InputType.UUID],
 			},
 		},
 	},
@@ -164,7 +204,7 @@ export const getEpisodesForPodcastSeriesFields: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				operation: [Operation.GET_EPISODES_FOR_PODCAST_SERIES],
-				episodesInputType: ['name'],
+				episodesInputType: [InputType.Name],
 			},
 		},
 	},
@@ -178,7 +218,7 @@ export const getEpisodesForPodcastSeriesFields: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				operation: [Operation.GET_EPISODES_FOR_PODCAST_SERIES],
-				episodesInputType: ['rssUrl'],
+				episodesInputType: [InputType.RssUrl],
 			},
 		},
 	},
@@ -192,9 +232,10 @@ export const getEpisodesForPodcastSeriesFields: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				operation: [Operation.GET_EPISODES_FOR_PODCAST_SERIES],
-				episodesInputType: ['itunesId'],
+				episodesInputType: [InputType.ItunesId],
 			},
 		},
 	},
-	maxResultsField(10, 25, [Operation.GET_EPISODES_FOR_PODCAST_SERIES]),
+	numResultsField(10, PAGINATION_CONFIGS[Operation.GET_EPISODES_FOR_PODCAST_SERIES], [Operation.GET_EPISODES_FOR_PODCAST_SERIES]),
+	includeTranscriptField(true, [Operation.GET_EPISODES_FOR_PODCAST_SERIES]),
 ];

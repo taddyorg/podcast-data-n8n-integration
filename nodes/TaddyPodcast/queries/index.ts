@@ -3,7 +3,7 @@ import { Operation } from '../constants';
 import { searchFields, handleSearch } from './search';
 import { getPodcastSeriesFields, handleGetPodcastSeries } from './getPodcastSeries';
 import { getMultiplePodcastsFields, handleGetMultiplePodcasts } from './getMultiplePodcasts';
-import { getEpisodesForPodcastSeriesFields, handleGetEpisodesForPodcastSeries } from './getEpisodesForPodcastSeries';
+import { getEpisodesForPodcastSeriesFields, handleGetEpisodesForPodcastSeries } from './getPodcastSeriesWithEpisodes';
 import { getLatestEpisodesFields, handleGetLatestEpisodes } from './getLatestEpisodes';
 import { getPopularPodcastsFields, handleGetPopularPodcasts } from './getPopularPodcasts';
 import { getTopChartsFields, handleGetTopCharts } from './getTopCharts';
@@ -52,26 +52,26 @@ export const taddyPodcastDescription: INodeTypeDescription = {
 				{
 					name: 'Get Podcast Details',
 					value: Operation.GET_PODCAST_SERIES,
-					description: 'Get details about a podcast by its UUID, Name, RSS URL, or iTunes ID',
+					description: 'Get details about a podcast by its UUID, name, RSS URL, or iTunes ID',
 					action: 'Get details about a podcast',
 				},
 				{
-					name: 'Get Podcast Episodes',
+					name: 'Get Newly Released Episodes for a Podcast',
 					value: Operation.GET_EPISODES_FOR_PODCAST_SERIES,
-					description: 'Get a list of episodes for a specific podcast',
-					action: 'Get a list of episodes for a specific Podcast',
+					description: 'Get the latest episodes for a podcast by its unique identifier (UUID), title/name, RSS URL, or iTunes ID',
+					action: 'Get newly released episodes for a podcast',
 				},
 				{
-					name: 'Get Latest Episodes from multiple Podcasts',
+					name: 'Get Newly Released Episodes for Multiple Podcasts',
 					value: Operation.GET_LATEST_EPISODES,
-					description: 'Get newly released episodes from multiple podcasts',
-					action: 'Get newly released episodes from multiple podcasts',
+					description: 'Get the latest episodes for a list of podcasts',
+					action: 'Get newly released episodes from a list of podcasts',
 				},
 				{
-					name: 'Get Episode Transcript',
-					value: Operation.GET_EPISODE_TRANSCRIPT,
-					description: 'Extract transcript from a specific episode (uses credits)',
-					action: 'Extract transcript from a specific episode',
+					name: 'Generate Episode Transcript',
+					value: Operation.GENERATE_EPISODE_TRANSCRIPT,
+					description: 'If a transcript is not available, you can generate a transcript for an episode (uses Taddy API transcript credits)',
+					action: 'If a transcript is not available, you can generate a transcript for an episode (uses Taddy API transcript credits)',
 				},
 				{
 					name: 'Get Most Popular Podcasts',
@@ -163,7 +163,7 @@ export async function handleOperation(
 		case Operation.GET_EPISODES_FOR_PODCAST_SERIES:
 			return handleGetEpisodesForPodcastSeries(itemIndex, context);
 
-		case Operation.GET_EPISODE_TRANSCRIPT:
+		case Operation.GENERATE_EPISODE_TRANSCRIPT:
 			return handleGetEpisodeTranscript(itemIndex, context);
 
 		default:

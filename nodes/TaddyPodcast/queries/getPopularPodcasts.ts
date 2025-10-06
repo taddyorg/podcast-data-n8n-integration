@@ -1,6 +1,6 @@
 import { INodeProperties, IExecuteFunctions, IDataObject } from 'n8n-workflow';
-import { Operation, GENRE_OPTIONS, LANGUAGE_OPTIONS, PodcastSeries, PODCAST_SERIES_FRAGMENT, MAX_API_LIMIT } from '../constants';
-import { requestWithRetry, standardizeResponse } from './shared';
+import { Operation, GENRE_OPTIONS, LANGUAGE_OPTIONS, PodcastSeries, PODCAST_SERIES_FRAGMENT, PAGINATION_CONFIGS } from '../constants';
+import { requestWithPagination, standardizeResponse, numResultsField } from './shared';
 
 // ============================================================================
 // Handler Function
@@ -10,22 +10,23 @@ export async function handleGetPopularPodcasts(
 	itemIndex: number,
 	context: IExecuteFunctions,
 ): Promise<IDataObject> {
-	const maxResults = context.getNodeParameter('maxResults', itemIndex) as number;
+	const numResults = context.getNodeParameter('numResults', itemIndex) as number;
 	const genres = context.getNodeParameter('popularGenres', itemIndex) as string[];
 	const language = context.getNodeParameter('popularLanguage', itemIndex) as string;
 
 	const query = `
-		query GetPopularContent($filterByGenres: [Genre!], $filterByLanguage: Language, $limitPerPage: Int) {
+		query GetPopularContent($filterByGenres: [Genre!], $filterByLanguage: Language, $page: Int, $limitPerPage: Int) {
 			getPopularContent(
 				filterByGenres: $filterByGenres
 				filterByLanguage: $filterByLanguage
+				page: $page
 				limitPerPage: $limitPerPage
 				taddyType: PODCASTSERIES
 			) {
 				popularityRankId
 				podcastSeries {
 					${PODCAST_SERIES_FRAGMENT}
-					
+
 				}
 			}
 		}
@@ -34,9 +35,15 @@ export async function handleGetPopularPodcasts(
 	const variables: IDataObject = {};
 	if (genres.length > 0) variables.filterByGenres = genres;
 	if (language) variables.filterByLanguage = language;
-	variables.limitPerPage = Math.min(maxResults, MAX_API_LIMIT);
 
-	const apiResponse = await requestWithRetry(query, variables, context);
+	const apiResponse = await requestWithPagination(
+		query,
+		variables,
+		context,
+		PAGINATION_CONFIGS[Operation.GET_POPULAR_PODCASTS]!,
+		numResults,
+		'getPopularContent'
+	);
 
 	const popularContent = apiResponse.data?.getPopularContent as Array<{ podcastSeries: PodcastSeries }> || [];
 	const podcasts = popularContent.map(item => item.podcastSeries);
@@ -56,6 +63,7 @@ export async function handleGetPopularPodcasts(
 // ============================================================================
 
 export const getPopularPodcastsFields: INodeProperties[] = [
+	numResultsField(10, PAGINATION_CONFIGS[Operation.GET_POPULAR_PODCASTS]!, [Operation.GET_POPULAR_PODCASTS]),
 	{
 		displayName: 'Filter by Genres',
 		name: 'popularGenres',

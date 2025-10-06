@@ -1,5 +1,5 @@
 import { INodeProperties, IExecuteFunctions, IDataObject, NodeOperationError } from 'n8n-workflow';
-import { Operation } from '../constants';
+import { EPISODE_WITH_TRANSCRIPT_FRAGMENT, Operation } from '../constants';
 import { requestWithRetry, standardizeResponse, validateUuid } from './shared';
 
 // ============================================================================
@@ -26,17 +26,7 @@ export async function handleGetEpisodeTranscript(
 	const query = `
 		query GetEpisodeTranscript($uuid: ID!) {
 			getPodcastEpisode(uuid: $uuid) {
-				uuid
-				name
-				description
-				transcript
-				transcriptUrlsWithDetails {
-					url
-					type
-					language
-					hasTimecodes
-					isTaddyExclusive
-				}
+				${EPISODE_WITH_TRANSCRIPT_FRAGMENT}	
 			}
 		}
 	`;
@@ -45,17 +35,17 @@ export async function handleGetEpisodeTranscript(
 	const episode = apiResponse.data?.getPodcastEpisode as {
 		uuid: string;
 		name: string;
+		description: string;
 		transcript?: string[];
-		transcriptUrlsWithDetails?: Array<{ url: string; type: string; language: string }>;
 	};
 
-	return standardizeResponse(Operation.GET_EPISODE_TRANSCRIPT, {
+	return standardizeResponse(Operation.GENERATE_EPISODE_TRANSCRIPT, {
 		episodeUuid,
 		episodeName: episode?.name || 'Unknown',
+		episodeDescription: episode?.description || 'Unknown',
 		transcript: episode?.transcript || [],
 		transcriptSegments: episode?.transcript?.length || 0,
 		transcriptText: (episode?.transcript || []).join('\n'),
-		transcriptUrls: episode?.transcriptUrlsWithDetails || [],
 	});
 }
 
@@ -71,10 +61,10 @@ export const getEpisodeTranscriptFields: INodeProperties[] = [
 		default: '',
 		placeholder: 'e.g., 123e4567-e89b-12d3-a456-426614174000',
 		description: 'The unique identifier of the episode',
-		hint: 'Get this from episode results. Transcript extraction uses API credits.',
+		hint: 'Transcript extraction uses API credits.',
 		displayOptions: {
 			show: {
-				operation: [Operation.GET_EPISODE_TRANSCRIPT],
+				operation: [Operation.GENERATE_EPISODE_TRANSCRIPT],
 			},
 		},
 	},

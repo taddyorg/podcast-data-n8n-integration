@@ -1,6 +1,6 @@
 import { INodeProperties, IExecuteFunctions, IDataObject, NodeOperationError } from 'n8n-workflow';
-import { Operation, GENRE_OPTIONS, PodcastSeries, PODCAST_SERIES_FRAGMENT, MAX_API_LIMIT } from '../constants';
-import { maxResultsField, requestWithRetry, standardizeResponse } from './shared';
+import { Operation, GENRE_OPTIONS, PodcastSeries, PODCAST_SERIES_FRAGMENT, PAGINATION_CONFIGS } from '../constants';
+import { numResultsField, requestWithPagination, standardizeResponse } from './shared';
 
 // ============================================================================
 // Handler Function
@@ -10,13 +10,14 @@ export async function handleGetTopCharts(
 	itemIndex: number,
 	context: IExecuteFunctions,
 ): Promise<IDataObject> {
-	const maxResults = context.getNodeParameter('maxResults', itemIndex) as number;
+	const numResults = context.getNodeParameter('numResults', itemIndex) as number;
 	const genres = context.getNodeParameter('popularGenres', itemIndex) as string[];
 
 	const query = `
-		query GetTopCharts($genres: [Genre!], $limitPerPage: Int) {
+		query GetTopCharts($genres: [Genre!], $page: Int, $limitPerPage: Int) {
 			getTopChartsByGenres(
 				genres: $genres
+				page: $page
 				limitPerPage: $limitPerPage
 				taddyType: PODCASTSERIES
 			) {
@@ -33,11 +34,17 @@ export async function handleGetTopCharts(
 	}
 
 	const variables: IDataObject = {
-		limitPerPage: Math.min(maxResults, MAX_API_LIMIT),
 		genres: genres,
 	};
 
-	const apiResponse = await requestWithRetry(query, variables, context);
+	const apiResponse = await requestWithPagination(
+		query,
+		variables,
+		context,
+		PAGINATION_CONFIGS[Operation.GET_DAILY_TOP_CHARTS],
+		numResults,
+		'getTopChartsByGenres'
+	);
 
 	// Extract podcast series from the nested structure
 	const topCharts = apiResponse.data?.getTopChartsByGenres as Array<{ podcastSeries: PodcastSeries }> || [];
@@ -55,7 +62,7 @@ export async function handleGetTopCharts(
 // ============================================================================
 
 export const getTopChartsFields: INodeProperties[] = [
-	maxResultsField(10, 25, [Operation.GET_DAILY_TOP_CHARTS]),
+	numResultsField(10, PAGINATION_CONFIGS[Operation.GET_DAILY_TOP_CHARTS], [Operation.GET_DAILY_TOP_CHARTS]),
 	{
 		displayName: 'Filter by Genres',
 		name: 'popularGenres',
