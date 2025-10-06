@@ -14,12 +14,25 @@ Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes
 
 ## Operations
 
-* Search for a podcast or episode with advanced filters
-* Get the transcript for a specific episode (uses transcript credits)
-* Get detailed information about a specific podcast
-* Get episodes for a specific podcast
-* Check number of Taddy API requests remaining
-* Check number of transcript credits remaining
+### Search & Discovery
+* **Search for podcasts** - Search with advanced filters (keywords, genres, language, popularity, etc.)
+* **Search for episodes** - Search episodes with advanced filters (keywords, date ranges, duration, etc.)
+* **Get popular podcasts** - Discover trending podcasts by genre or language
+* **Get daily top charts** - Access top podcast and episode charts by country or genre
+
+### Podcast & Episode Data
+* **Get podcast details** - Retrieve detailed information about a podcast by UUID, name, RSS URL, or iTunes ID
+* **Get episodes for a podcast** - Get newly released episodes for a specific podcast (supports UUID, name, RSS URL, or iTunes ID)
+* **Get multiple podcasts** - Batch retrieve multiple podcasts by UUIDs in a single request
+* **Get multiple episodes** - Batch retrieve multiple episodes by UUIDs in a single request
+* **Get newly released episodes** - Get the latest episodes from multiple podcasts
+
+### Transcripts
+* **Generate episode transcript** - Extract or generate transcript for an episode (uses Taddy API transcript credits)
+
+### Account Management
+* **Check API requests remaining** - Monitor your monthly Taddy API request quota
+* **Check transcript credits remaining** - Check your available transcript generation credits
 
 ## Credentials
 
@@ -35,6 +48,7 @@ You'll need a Taddy API account:
 
 ## Version History
 
+* 0.3.0 - Added new queries, pagination, and error handling
 * 0.2.3 - Refactored into separate operations
 * 0.2.2 - Added icon support
 * 0.2.0 - Added advanced search functionality
