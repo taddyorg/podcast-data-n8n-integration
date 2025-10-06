@@ -1,6 +1,6 @@
 import { INodeProperties, IExecuteFunctions, IDataObject } from 'n8n-workflow';
 import { Operation, PodcastEpisode, EPISODE_FRAGMENT, EPISODE_WITH_TRANSCRIPT_FRAGMENT, PODCAST_SERIES_MINI_FRAGMENT } from '../constants';
-import { requestWithPagination, standardizeResponse, parseAndValidateUuids, includeTranscriptField, numResultsField } from './shared';
+import { requestWithPagination, standardizeResponse, parseAndValidateUuids, parseAndValidateRssUrls, includeTranscriptField, numResultsField } from './shared';
 
 // ============================================================================
 // Handler Function
@@ -22,10 +22,7 @@ export async function handleGetLatestEpisodes(
 		uuids = parseAndValidateUuids(uuidsInput, 1000, context);
 	} else {
 		const rssUrlsInput = context.getNodeParameter('latestEpisodesRssUrls', itemIndex) as string;
-		rssUrls = rssUrlsInput
-			.split(',')
-			.map(u => u.trim())
-			.filter(u => u);
+		rssUrls = parseAndValidateRssUrls(rssUrlsInput, 1000, context);
 	}
 
 	// Dynamically build episode fragment based on includeTranscript
@@ -58,9 +55,7 @@ export async function handleGetLatestEpisodes(
 	const episodes = (apiResponse.data?.getLatestPodcastEpisodes as PodcastEpisode[]) || [];
 	return standardizeResponse(Operation.GET_LATEST_EPISODES, {
 		episodes,
-		totalEpisodes: episodes.length,
-		inputType,
-		inputCount: uuids.length || rssUrls.length,
+		totalReturned: episodes.length,
 	});
 }
 
@@ -114,6 +109,6 @@ export const getLatestEpisodesFields: INodeProperties[] = [
 			},
 		},
 	},
-	numResultsField(50, Operation.GET_LATEST_EPISODES),
+	numResultsField(Operation.GET_LATEST_EPISODES, 25),
 	includeTranscriptField(true, [Operation.GET_LATEST_EPISODES]),
 ];

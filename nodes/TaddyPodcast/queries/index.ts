@@ -4,6 +4,7 @@ import { searchPodcastsFields, handleSearchPodcasts } from './searchPodcasts';
 import { searchEpisodesFields, handleSearchEpisodes } from './searchEpisodes';
 import { getPodcastSeriesFields, handleGetPodcastSeries } from './getPodcastSeries';
 import { getMultiplePodcastsFields, handleGetMultiplePodcasts } from './getMultiplePodcasts';
+import { getMultipleEpisodesFields, handleGetMultipleEpisodes } from './getMultipleEpisodes';
 import { getEpisodesForPodcastSeriesFields, handleGetEpisodesForPodcastSeries } from './getPodcastSeriesWithEpisodes';
 import { getLatestEpisodesFields, handleGetLatestEpisodes } from './getLatestEpisodes';
 import { getPopularPodcastsFields, handleGetPopularPodcasts } from './getPopularPodcasts';
@@ -83,8 +84,8 @@ export const taddyPodcastDescription: INodeTypeDescription = {
 				{
 					name: 'Get Daily Top Charts',
 					value: Operation.GET_DAILY_TOP_CHARTS,
-					description: 'Get top podcast charts by genre',
-					action: 'Get top podcast charts by genre',
+					description: 'Get top charts for podcasts or episodes by country or genre',
+					action: 'Get top charts for podcasts or episodes by country or genre',
 				},
 				{
 					name: 'Get Multiple Podcasts',
@@ -93,15 +94,21 @@ export const taddyPodcastDescription: INodeTypeDescription = {
 					action: 'Get information about multiple podcasts by UUID',
 				},
 				{
+					name: 'Get Multiple Episodes',
+					value: Operation.GET_MULTIPLE_EPISODES,
+					description: 'Get information about multiple episodes by UUID',
+					action: 'Get information about multiple episodes by UUID',
+				},
+				{
 					name: 'Check Taddy API Requests Remaining',
 					value: Operation.CHECK_API_REQUESTS_REMAINING,
-					description: 'Check the number of Taddy API requests remaining',
+					description: 'Check the number of Taddy API requests remaining this month',
 					action: 'Check Taddy API requests remaining',
 				},
 				{
 					name: 'Check Transcript Credits Remaining',
 					value: Operation.CHECK_TRANSCRIPT_CREDITS_REMAINING,
-					description: 'Check the number of transcript credits you have remaining',
+					description: 'Check the number of transcript credits you have remaining this month',
 					action: 'Check transcript credits remaining',
 				},
 			],
@@ -110,6 +117,7 @@ export const taddyPodcastDescription: INodeTypeDescription = {
 		...searchEpisodesFields,
 		...getPodcastSeriesFields,
 		...getMultiplePodcastsFields,
+		...getMultipleEpisodesFields,
 		...getEpisodesForPodcastSeriesFields,
 		...getLatestEpisodesFields,
 		...getPopularPodcastsFields,
@@ -146,6 +154,9 @@ export async function handleOperation(
 
 		case Operation.GET_MULTIPLE_PODCASTS:
 			return handleGetMultiplePodcasts(itemIndex, context);
+
+		case Operation.GET_MULTIPLE_EPISODES:
+			return handleGetMultipleEpisodes(itemIndex, context);
 
 		case Operation.GET_POPULAR_PODCASTS:
 			return handleGetPopularPodcasts(itemIndex, context);

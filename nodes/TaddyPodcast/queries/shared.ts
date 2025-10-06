@@ -5,7 +5,7 @@ import { Operation, ApiResponse, API_BASE_URL, MAX_RETRIES, GENRE_HIERARCHY, PAG
 // UI Field Definitions
 // ============================================================================
 
-export const numResultsField = (defaultValue: number, operation: Operation): INodeProperties => {
+export const numResultsField = (operation: Operation, defaultValue?: number): INodeProperties => {
 	const paginationConfig = PAGINATION_CONFIGS[operation];
 
 	if (!paginationConfig) {
@@ -14,10 +14,10 @@ export const numResultsField = (defaultValue: number, operation: Operation): INo
 	
 	return {
 		displayName: 'Number of Results to Return',
-		name: 'maxResults',
+		name: 'numResults',
 		type: 'number',
-		default: defaultValue,
-		description: `Number of results to return (1-${paginationConfig.limitPerPage * paginationConfig.maxPages})`,
+		default: defaultValue || paginationConfig.limitPerPage,
+		description: `Number of results to return (1-${paginationConfig.limitPerPage * paginationConfig.maxPages}). This query allows for up to ${paginationConfig.maxPages} pages of ${paginationConfig.limitPerPage} results.`,
 		hint: 'Taddy API supports pagination, this will make multiple requests to the API to fetch all results (if needed)',
 		typeOptions: {
 			minValue: 1,
@@ -89,6 +89,50 @@ export function parseAndValidateUuids(
 }
 
 /**
+ * Validates a single RSS URL
+ * @param url - The RSS URL string to validate
+ * @returns True if the URL is valid, false otherwise
+ */
+export function validateRssUrl(url: string): boolean {
+	try {
+		const parsedUrl = new URL(url);
+		return parsedUrl.protocol === 'http:' || parsedUrl.protocol === 'https:';
+	} catch {
+		return false;
+	}
+}
+
+/**
+ * Validates and parses a comma-separated list of RSS URLs
+ * @param rssUrlsInput - Comma-separated RSS URL string
+ * @param maxCount - Maximum number of RSS URLs allowed
+ * @param context - n8n execution context
+ * @returns Array of valid RSS URLs
+ * @throws NodeOperationError if any RSS URL is invalid
+ */
+export function parseAndValidateRssUrls(
+	rssUrlsInput: string,
+	maxCount: number,
+	context: IExecuteFunctions,
+): string[] {
+	const rssUrls = rssUrlsInput
+		.split(',')
+		.map(u => u.trim())
+		.filter(u => u)
+		.slice(0, maxCount);
+
+	const invalidUrls = rssUrls.filter(url => !validateRssUrl(url));
+	if (invalidUrls.length > 0) {
+		throw new NodeOperationError(
+			context.getNode(),
+			`Invalid RSS URL format: ${invalidUrls.join(', ')}. URLs must start with http:// or https://`,
+		);
+	}
+
+	return rssUrls;
+}
+
+/**
  * Validates and parses a date string for API use
  * @param dateString - Date string to parse
  * @returns Unix timestamp in seconds
@@ -139,6 +183,16 @@ export function sleep(ms: number): Promise<void> {
 }
 
 /**
+ * Formats GraphQL errors into a user-friendly error message
+ * @param errors - Array of GraphQL errors from the API response
+ * @returns Formatted error message string
+ */
+export function formatGraphQLErrors(errors: Array<{ message: string }>): string {
+	const uniqueErrorMessages = Array.from(new Set(errors.map(err => err.message)));
+	return `Taddy API Error${uniqueErrorMessages.length > 1 ? 's' : ''}: ${uniqueErrorMessages.join('\n')}`;
+}
+
+/**
  * Makes an API request to Taddy's GraphQL endpoint
  * @param query - GraphQL query string
  * @param variables - Query variables
@@ -173,6 +227,7 @@ export async function makeApiRequest(
  * @param variables - Query variables
  * @param context - n8n execution context
  * @returns API response data
+ * @throws NodeOperationError if the API returns GraphQL errors
  */
 export async function requestWithRetry(
 	query: string,
@@ -184,9 +239,21 @@ export async function requestWithRetry(
 	for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
 		try {
 			// Try base URL first
-			return await makeApiRequest(query, variables, context);
+			const response = await makeApiRequest(query, variables, context);
+
+			// Check for GraphQL errors in the response
+			if (response.errors && response.errors.length > 0) {
+				const errorMessage = formatGraphQLErrors(response.errors);
+				throw new NodeOperationError(context.getNode(), errorMessage);
+			}
+
+			return response;
 		} catch (err: unknown) {
 			lastError = err;
+			// If this is a NodeOperationError (GraphQL error), don't retry - throw immediately
+			if (err instanceof NodeOperationError) {
+				throw err;
+			}
 			// If this is not the last attempt, wait with exponential backoff
 			if (attempt < MAX_RETRIES) {
 				const backoffMs = Math.pow(2, attempt) * 1000;
@@ -224,7 +291,7 @@ export async function requestWithPagination(
 	const cappedMaxResults = Math.min(numResults, paginationConfig.limitPerPage * paginationConfig.maxPages);
 
 	// Calculate how many pages we need to fetch
-	const limitPerPage = paginationConfig.limitPerPage;
+	const limitPerPage = Math.min(cappedMaxResults, paginationConfig.limitPerPage);
 	const totalPages = Math.min(
 		Math.ceil(cappedMaxResults / limitPerPage),
 		paginationConfig.maxPages

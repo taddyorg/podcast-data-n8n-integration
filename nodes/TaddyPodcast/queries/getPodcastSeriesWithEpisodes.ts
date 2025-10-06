@@ -99,7 +99,7 @@ export async function handleGetEpisodesForPodcastSeries(
 	const includeTranscript = context.getNodeParameter('includeTranscript', itemIndex, true) as boolean;
 
 	// Validate input and get query parameters
-	const { queryVariable, queryVariableType, inputValue, inputLabel } = validatePodcastInput(inputType, itemIndex, context);
+	const { queryVariable, queryVariableType, inputValue } = validatePodcastInput(inputType, itemIndex, context);
 
 	// Dynamically build episode fragment based on includeTranscript
 	const episodeFragment = includeTranscript ? EPISODE_WITH_TRANSCRIPT_FRAGMENT : EPISODE_EXTENDED_FRAGMENT;
@@ -131,11 +131,9 @@ export async function handleGetEpisodesForPodcastSeries(
 	const episodes = podcast?.episodes || [];
 
 	return standardizeResponse(Operation.GET_EPISODES_FOR_PODCAST_SERIES, {
-		inputType,
-		[inputLabel]: inputValue,
 		podcastName: podcast?.name || 'Unknown',
 		episodes,
-		totalEpisodesReturned: episodes.length,
+		totalReturned: episodes.length,
 	});
 }
 
@@ -236,6 +234,6 @@ export const getEpisodesForPodcastSeriesFields: INodeProperties[] = [
 			},
 		},
 	},
-	numResultsField(10, Operation.GET_EPISODES_FOR_PODCAST_SERIES),
+	numResultsField(Operation.GET_EPISODES_FOR_PODCAST_SERIES),
 	includeTranscriptField(true, [Operation.GET_EPISODES_FOR_PODCAST_SERIES]),
 ];

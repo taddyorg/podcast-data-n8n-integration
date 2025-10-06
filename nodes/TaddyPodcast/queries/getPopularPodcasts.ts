@@ -11,8 +11,12 @@ export async function handleGetPopularPodcasts(
 	context: IExecuteFunctions,
 ): Promise<IDataObject> {
 	const numResults = context.getNodeParameter('numResults', itemIndex) as number;
-	const genres = context.getNodeParameter('genres', itemIndex) as string[];
-	const language = context.getNodeParameter('language', itemIndex) as string;
+
+	// Get advanced options
+	const advancedOptions = context.getNodeParameter('advancedOptions', itemIndex, {}) as IDataObject;
+
+	const filterByGenres = advancedOptions.filterByGenres as string[] || [];
+	const filterByLanguage = advancedOptions.filterByLanguage as string || '';
 
 	const query = `
 		query GetPopularContent($filterByGenres: [Genre!], $filterByLanguage: Language, $page: Int, $limitPerPage: Int) {
@@ -33,8 +37,8 @@ export async function handleGetPopularPodcasts(
 	`;
 
 	const variables: IDataObject = {};
-	if (genres.length > 0) variables.filterByGenres = genres;
-	if (language) variables.filterByLanguage = language;
+	if (filterByGenres.length > 0) variables.filterByGenres = filterByGenres;
+	if (filterByLanguage) variables.filterByLanguage = filterByLanguage;
 
 	const apiResponse = await requestWithPagination(
 		Operation.GET_POPULAR_PODCASTS,
@@ -52,8 +56,8 @@ export async function handleGetPopularPodcasts(
 		podcasts,
 		totalReturned: podcasts.length,
 		filters: {
-			genres: genres.length > 0 ? genres : 'all',
-			language: language || 'all',
+			genres: filterByGenres.length > 0 ? filterByGenres : 'all',
+			language: filterByLanguage || 'all',
 		},
 	});
 }
@@ -63,31 +67,35 @@ export async function handleGetPopularPodcasts(
 // ============================================================================
 
 export const getPopularPodcastsFields: INodeProperties[] = [
-	numResultsField(10, Operation.GET_POPULAR_PODCASTS),
+	numResultsField(Operation.GET_POPULAR_PODCASTS),
 	{
-		displayName: 'Filter by Genres',
-		name: 'genres',
-		type: 'multiOptions',
-		options: GENRE_OPTIONS,
-		default: [],
-		description: 'Filter popular podcasts by specific genres',
+		displayName: 'Advanced Options',
+		name: 'advancedOptions',
+		type: 'collection',
+		placeholder: 'Add Option',
+		default: {},
 		displayOptions: {
 			show: {
 				operation: [Operation.GET_POPULAR_PODCASTS],
 			},
 		},
-	},
-	{
-		displayName: 'Filter by Language',
-		name: 'language',
-		type: 'options',
-		options: LANGUAGE_OPTIONS,
-		default: '',
-		description: 'Filter popular podcasts by language',
-		displayOptions: {
-			show: {
-				operation: [Operation.GET_POPULAR_PODCASTS],
+		options: [
+			{
+				displayName: 'Filter by Genres',
+				name: 'filterByGenres',
+				type: 'multiOptions',
+				options: GENRE_OPTIONS,
+				default: [],
+				description: 'Filter popular podcasts by specific genres',
 			},
-		},
+			{
+				displayName: 'Filter by Language',
+				name: 'filterByLanguage',
+				type: 'options',
+				options: LANGUAGE_OPTIONS,
+				default: '',
+				description: 'Filter popular podcasts by language',
+			},
+		],
 	},
 ];

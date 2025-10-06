@@ -43,9 +43,9 @@ export async function handleGetEpisodeTranscript(
 		episodeUuid,
 		episodeName: episode?.name || 'Unknown',
 		episodeDescription: episode?.description || 'Unknown',
-		transcript: episode?.transcript || [],
-		transcriptSegments: episode?.transcript?.length || 0,
-		transcriptText: (episode?.transcript || []).join('\n'),
+		transcript: (episode?.transcript || []).join('\n'),
+		transcriptInSegments: episode?.transcript || [],
+		transcriptInSegmentsCount: episode?.transcript?.length || 0,
 	});
 }
 

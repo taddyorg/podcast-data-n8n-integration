@@ -42,11 +42,13 @@ nodes/
     queries/                        # Modular query handlers (one file per operation)
       index.ts                      # Central router and node description
       shared.ts                     # Shared utilities (requestWithRetry, validation)
-      search.ts                     # Search operations
+      searchPodcasts.ts             # Search for podcasts
+      searchEpisodes.ts             # Search for episodes
       getPodcastSeries.ts           # Get podcast by UUID/name/RSS/iTunes ID
       getEpisodesForPodcastSeries.ts # Get episodes for a podcast
       getLatestEpisodes.ts          # Get latest episodes
       getMultiplePodcasts.ts        # Batch podcast retrieval
+      getMultipleEpisodes.ts        # Batch episode retrieval
       getPopularPodcasts.ts         # Popular podcasts
       getTopCharts.ts               # Daily top charts
       getEpisodeTranscript.ts       # Transcript extraction
