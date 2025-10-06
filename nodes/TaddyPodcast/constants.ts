@@ -211,6 +211,17 @@ export const EPISODE_WITH_TRANSCRIPT_FRAGMENT = `
 	transcript
 `;
 
+export const EPISODE_WITH_DETAILED_TRANSCRIPT_FRAGMENT = `
+	${EPISODE_EXTENDED_FRAGMENT}
+	transcriptWithSpeakersAndTimecodes(style: $style) {
+		id
+		text
+		speaker
+		startTimecode
+		endTimecode
+	}
+`;
+
 // ============================================================================
 // UI Options for Properties
 // ============================================================================
@@ -642,6 +653,11 @@ export const COUNTRY_OPTIONS = [
 	{ name: 'Yemen', value: 'YEMEN' },
 	{ name: 'Zambia', value: 'ZAMBIA' },
 	{ name: 'Zimbabwe', value: 'ZIMBABWE' },
+];
+
+export const TRANSCRIPT_STYLE_OPTIONS = [
+	{ name: 'Paragraph', value: 'PARAGRAPH' },
+	{ name: 'Utterance', value: 'UTTERANCE' },
 ];
 
 export const LANGUAGE_OPTIONS = [
