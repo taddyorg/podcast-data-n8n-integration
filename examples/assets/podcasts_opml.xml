@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
+<opml version="1.0">
+  <head>
+    <title>Podcast Feeds</title>
+  </head>
+  <body>
+    <outline text="feeds">
+      <outline type="rss" text="The Daily" xmlUrl="https://feeds.simplecast.com/54nAGcIl" />
+      <outline type="rss" text="The Tim Ferriss Show" xmlUrl="https://rss.art19.com/tim-ferriss-show" />
+      <outline type="rss" text="Planet Money" xmlUrl="https://feeds.npr.org/510289/podcast.xml" />
+      <outline type="rss" text="Darknet Diaries" xmlUrl="https://podcast.darknetdiaries.com" />
+      <outline type="rss" text="StarTalk Radio" xmlUrl="https://feeds.simplecast.com/4T39_jAj" />
+    </outline>
+  </body>
+</opml>

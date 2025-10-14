@@ -1,0 +1,173 @@
+{
+  "name": "Upload and Parse OPML File",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -224,
+        400
+      ],
+      "id": "5b373d76-a88b-4c01-84f3-1e72a90246f9",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "content": "## Import OPML podcast subscriptions to get latest episodes\n\n## Who's it for\nPodcast listeners who want to aggregate new episodes from all their subscriptions in one place, or migrate their subscriptions to a custom feed reader.\n\n## How it works\nExport your podcast subscriptions as an OPML file from your podcast app, paste the file contents into this workflow, and it will automatically fetch the latest episodes from all your subscribed podcasts. Save the results to Notion, Google Sheets, or any other destination for a unified view of new content.\n\n## Requirements\n- Taddy API account (sign up at taddy.org)\n- OPML file from your podcast app\n- Google Sheets or Notion (for saving results)\n- Self-hosted n8n instance (required for community nodes)\n\n## How to export OPML from popular apps\n**Apple Podcasts (iOS/Mac):**\n- Settings → Export Subscriptions → Share OPML file\n\n**Overcast:**\n- Settings → Export OPML → Copy to clipboard\n\n**Pocket Casts:**\n- Settings → Import/Export → Export subscriptions\n\n**Spotify:** Does not support OPML export\n\n**Most podcast apps** have OPML export in Settings or Account\n\n## How to set up\n1. Install the Taddy community node\n2. Export OPML from your podcast app\n3. Open the OPML file in a text editor and copy all contents\n4. Paste contents into the Set Fields node\n5. Run the workflow to fetch latest episodes\n6. Results will be saved to your chosen destination\n\n## How to customize\n- Limit to episodes from last 24-48 hours\n- Filter by specific genres or keywords\n- Send digest email instead of saving\n- Schedule daily to create automated podcast digest\n- Add transcripts for searchable archive",
+        "height": 1152,
+        "width": 1008
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1408,
+        -512
+      ],
+      "typeVersion": 1,
+      "id": "5c50fbb3-36f5-44ab-a2c7-b9051fdf0890",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a78d6d26-8d99-43a6-8b07-4ac7195ad34c",
+              "name": "OPML",
+              "value": "<?xml version='1.0' encoding='UTF-8' standalone='yes' ?> <opml version=\"1.0\">   <head>     <title>Podcast Feeds</title>   </head>   <body>     <outline text=\"feeds\">       <outline type=\"rss\" text=\"The Daily\" xmlUrl=\"https://feeds.simplecast.com/54nAGcIl\" />       <outline type=\"rss\" text=\"The Tim Ferriss Show\" xmlUrl=\"https://rss.art19.com/tim-ferriss-show\" />       <outline type=\"rss\" text=\"Planet Money\" xmlUrl=\"https://feeds.npr.org/510289/podcast.xml\" />       <outline type=\"rss\" text=\"Darknet Diaries\" xmlUrl=\"https://podcast.darknetdiaries.com\" />       <outline type=\"rss\" text=\"StarTalk Radio\" xmlUrl=\"https://feeds.simplecast.com/4T39_jAj\" />     </outline>   </body> </opml>",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        16,
+        400
+      ],
+      "id": "89381709-e1e2-41ed-a6ae-5d361390d80b",
+      "name": "Paste OPML Here"
+    },
+    {
+      "parameters": {
+        "content": "Extracts podcast names and RSS URLs from OPML\n\nEach podcast becomes a separate item for processing\n\nHandles all standard OPML formats from podcast apps",
+        "height": 496,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        272,
+        80
+      ],
+      "typeVersion": 1,
+      "id": "9d8e46cb-4a60-4634-9780-08bdfb341b3a",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "Paste your entire OPML file contents here\n\nOPML is an XML file format that lists all your podcast subscriptions with their RSS feed URLs. It can be found in most Podcast Players as an export.\n\nNOTE: Spotify currently does not support OPML Export\n\nCopy everything from <?xml to </opml>",
+        "height": 496,
+        "width": 256,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -64,
+        80
+      ],
+      "typeVersion": 1,
+      "id": "f61f4ee1-9d6e-4ec2-baf1-268b9111529a",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "jsCode": "const opmlContent = $input.first().json.OPML;\n\n// Use regex to match all RSS outline elements\nconst rssPattern = /<outline[^>]*type=\"rss\"[^>]*text=\"([^\"]*)\"[^>]*xmlUrl=\"([^\"]*)\"[^>]*\\/>/g;\nconst podcasts = [];\n\nlet match;\nwhile ((match = rssPattern.exec(opmlContent)) !== null) {\n  podcasts.push({\n    name: match[1],\n    rssUrl: match[2]\n  });\n}\n\nreturn podcasts.map(podcast => ({\n  json: {\n    name: podcast.name,\n    rssUrl: podcast.rssUrl\n  }\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        336,
+        400
+      ],
+      "id": "b052df64-6fcf-4b88-b9ec-275904d3da41",
+      "name": "Parse OPML File"
+    },
+    {
+      "parameters": {
+        "operation": "getEpisodesForPodcastSeries",
+        "episodesInputType": "rssUrl",
+        "rssUrl": "={{ $json.rssUrl }}",
+        "numResults": 15,
+        "includeTranscript": false
+      },
+      "type": "CUSTOM.taddyPodcast",
+      "typeVersion": 1,
+      "position": [
+        576,
+        400
+      ],
+      "id": "ad442c1a-d5b2-473c-9a02-5ce6544496fa",
+      "name": "Get Latest Episodes by RSS",
+      "credentials": {
+        "taddyPodcastApi": {
+          "id": "VdezWNeTJukANs8W",
+          "name": "Taddy Podcast account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Paste OPML Here",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Paste OPML Here": {
+      "main": [
+        [
+          {
+            "node": "Parse OPML File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse OPML File": {
+      "main": [
+        [
+          {
+            "node": "Get Latest Episodes by RSS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Latest Episodes by RSS": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "58aa158d-3cb5-4457-b44c-e5c1ec2d0230",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "037ca12a37a65de95240f4fc2d09ef5d889852a9a654d7193831532984f75839"
+  },
+  "id": "taVCtBYm4Y5xHufP",
+  "tags": []
+}
