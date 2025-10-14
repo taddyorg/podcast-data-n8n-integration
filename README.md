@@ -1,16 +1,29 @@
-# podcast-data-n8n-node
+# n8n-nodes-taddy
 
-This is an n8n community node that lets you access the Taddy Podcast API for podcast data extraction and analysis.
+> Community node for integrating the Taddy Podcast API with your n8n workflows.
 
-[Taddy Podcast API](https://taddy.org/developers/podcast-api) provides podcast and episode data through its GraphQL API.
+This n8n community node enables seamless integration of **[Taddy Podcast API](https://taddy.org/developers/podcast-api)** in your **[n8n](https://n8n.io)** workflows.
+
+**[Taddy Podcast API](https://taddy.org/developers/podcast-api)** provides comprehensive podcast and episode data through its GraphQL API, including search, charts, metadata, and AI-powered transcription.
+
+**[n8n](https://n8n.io)** is a powerful, AI-native, open-source workflow automation tool. Connect hundreds of services and rapidly create complex solutions with ease.
+
+## Features
+
+- **Advanced Search** - Find podcasts and episodes with filters for keywords, genres, language, popularity, date ranges, and duration
+- **Charts & Discovery** - Access daily top charts by country or genre, discover trending podcasts
+- **Batch Operations** - Retrieve multiple podcasts or episodes in a single request with automatic pagination
+- **AI Transcription** - Generate or retrieve episode transcripts (uses Taddy API transcript credits)
+- **RSS Integration** - Fetch podcast data using RSS URLs for seamless integration with existing feeds
+- **Quota Management** - Monitor your API request limits and transcript credits
 
 ## Installation
 
-Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes/installation/) to add community nodes to n8n.
+Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes/installation/) in the n8n community nodes documentation.
 
-1. Go to Settings > Community Nodes
-2. Enter: `podcast-data-n8n-integration`
-3. Install
+1. Go to **Settings > Community Nodes**
+2. Enter: `n8n-nodes-taddy`
+3. Click **Install**
 
 ## Operations
 
@@ -36,20 +49,37 @@ Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes
 
 ## Credentials
 
-You'll need a Taddy API account:
+To use this node, you need a [Taddy API](https://taddy.org) account:
+
 1. Sign up at [taddy.org](https://taddy.org)
-2. Get your API Key and User ID
-3. Configure credentials in n8n
+2. Get your **API Key** and **User ID** from your account dashboard
+3. Configure credentials in n8n under **Credentials > New > Taddy API**
+
+## Example Workflows
+
+Example workflows demonstrating common use cases are available:
+- **Podcast Monitoring** - Track new episodes from your favorite podcasts
+- **Transcript Generation** - Automatically generate and process episode transcripts
+- **Chart Tracking** - Monitor podcast rankings over time
+- **Search Podcasts** - Use advanced search to find podcasts and store them in Airtable
+- **Import OPML File** - Import the podcasts you subscribe to from your favorite player and find latest episodes
+
+_(Links to be added once node is published to n8n and templates submitted here: https://creators.n8n.io/workflows/edit)_
+
+## Compatibility
+
+Tested with n8n version 1.39.1 and above.
 
 ## Resources
 
 * [n8n community nodes documentation](https://docs.n8n.io/integrations/community-nodes/)
-* [Taddy API documentation](https://taddy.org/developers/docs)
+* [Taddy API documentation](https://taddy.org/developers/podcast-api)
+* [Example workflows](https://n8n.io/workflows/) (coming soon)
 
 ## Version History
 
-* 0.3.0 - Added new queries, pagination, and error handling
-* 0.2.3 - Refactored into separate operations
-* 0.2.2 - Added icon support
-* 0.2.0 - Added advanced search functionality
-* 0.1.0 - Initial release
+* **0.3.0** - Added new queries, pagination, and error handling
+* **0.2.3** - Refactored into separate operations
+* **0.2.2** - Added icon support
+* **0.2.0** - Added advanced search functionality
+* **0.1.0** - Initial release
