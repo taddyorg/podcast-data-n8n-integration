@@ -1,12 +1,13 @@
 {
-  "name": "Track podcast chart rankings weekly with Taddy to Google Sheets",
+  "name": "Track your podcast's rankings over time with Taddy Podcast API to Google Sheets",
   "nodes": [
     {
       "parameters": {
         "rule": {
           "interval": [
             {
-              "field": "weeks"
+              "field": "days",
+              "triggerAtHour": 10
             }
           ]
         }
@@ -18,11 +19,11 @@
         240
       ],
       "id": "53396251-7768-4019-8c26-67d7c9957c5b",
-      "name": "Weekly on Sundays"
+      "name": "Daily at 10am"
     },
     {
       "parameters": {
-        "content": "## Track podcast chart rankings weekly with Taddy to Google Sheets\n\n## Who's it for\nPodcast producers, marketing teams, and creators who want to monitor their show's performance on podcast charts over time.\n\n## How it works\nEvery week, this workflow checks the top 100 podcasts in your genre on Apple Podcasts charts, finds your podcast's position (if ranked), and logs it to a Google Sheet with a timestamp. Track your growth over time and get alerted when you break into new ranking tiers.\n\n## Requirements\n- Taddy API account (sign up at taddy.org)\n- Google Sheets with tracking spreadsheet\n- Self-hosted n8n instance (required for community nodes)\n\n## How to set up\n1. Install the Taddy community node from Settings > Community Nodes\n2. Add your Taddy API credentials\n3. Create a Google Sheet with columns: Date, Genre, Rank, Podcast Name, Total Episodes\n4. Update the Set Fields node with your podcast UUID and genre\n5. Adjust the schedule trigger (default: every Monday at 9am)\n6. Run once to test\n\n## How to customize\n- Track multiple podcasts by adding loops\n- Monitor multiple genres\n- Add Slack alerts when rank improves or drops significantly\n- Calculate week-over-week change with a formula node\n- Export monthly reports",
+        "content": "## Track your podcast's rankings daily on Apple Podcasts with Taddy Podcast API to Google Sheets\n\n## Who's it for\nPodcast creators, producers, and marketing teams who want to monitor their podcast's performance on podcast charts over time.\n\n## How it works\nEvery day, this workflow checks the top 200 podcasts on Apple Podcasts charts, you can specify the genre, finds your podcast's position (if ranked), and logs it to a Google Sheet with a timestamp. Track your growth over time and get alerted when you break into new ranking tiers.\n\n## Requirements\n- Taddy API account (sign up at taddy.org)\n- Google Sheets with tracking spreadsheet\n- Self-hosted n8n instance (required for community nodes)\n\n## How to set up\n1. Install the Taddy community node from Settings > Community Nodes\n2. Add your Taddy API credentials\n3. Create a Google Sheet with columns: Date, Genre, Rank, Podcast Name, Total Episodes\n4. Update the Set Fields node with your podcast UUID and genre\n5. Adjust the schedule trigger (default: every day at 10am)\n6. Run once to test\n\n## How to customize\n- Track multiple podcasts by adding loops\n- Monitor multiple genres\n- Add Slack alerts when rank improves or drops significantly\n- Calculate day-over-day change with a formula node\n- Export weekly or monthly reports",
         "height": 768,
         "width": 912
       },
@@ -38,7 +39,7 @@
     {
       "parameters": {
         "operation": "getDailyTopCharts",
-        "numResults": 100
+        "numResults": 200
       },
       "type": "CUSTOM.taddyPodcast",
       "typeVersion": 1,
@@ -47,7 +48,7 @@
         240
       ],
       "id": "78902b08-bdae-48d2-bb94-0dfe621edf15",
-      "name": "Get current top 100",
+      "name": "Get Daily Top 200 on Apple Podcasts",
       "credentials": {
         "taddyPodcastApi": {
           "id": "VdezWNeTJukANs8W",
@@ -62,7 +63,7 @@
             {
               "id": "60c9c765-3ec2-455a-b8ab-753d9b906ac3",
               "name": "myPodcast",
-              "value": "71f1db32-8859-4b21-b9fa-21a895de33bb",
+              "value": "d682a935-ad2d-46ee-a0ac-139198b83bcc",
               "type": "string"
             }
           ]
@@ -76,11 +77,11 @@
         240
       ],
       "id": "af2862a3-a371-4999-8b05-38be25d7d6af",
-      "name": "Set Your Podcast UUID"
+      "name": "Filter for your podcast"
     },
     {
       "parameters": {
-        "jsCode": "const podcastUUID = $('Set Your Podcast UUID').item.json.myPodcast.trim();\nconst chartResults = $('Get current top 100').first().json.podcasts;\n\nlet rank = null;\nlet foundPodcast = null;\n\nfor (let i = 0; i < chartResults.length; i++) {\n  if (chartResults[i].uuid.trim() === podcastUUID) {\n    rank = i + 1;\n    foundPodcast = chartResults[i];\n    break;\n  }\n}\n\nreturn [{\n  json: {\n    date: new Date().toISOString().split('T')[0],\n    rank: rank || \"Not in Top 100\",\n    podcastName: foundPodcast?.name || \"Unknown\",\n    genre: foundPodcast?.genres?.[0] || \"Unknown\"\n  }\n}];"
+        "jsCode": "const podcastUUID = $('Filter for your podcast').first().json.myPodcast.trim();\nconst chartResults = $('Get Daily Top 200 on Apple Podcasts').first().json.podcasts;\n\nlet rank = null;\nlet foundPodcast = null;\n\nfor (let i = 0; i < chartResults.length; i++) {\n  if (chartResults[i].uuid.trim() === podcastUUID) {\n    rank = i + 1;\n    foundPodcast = chartResults[i];\n    break;\n  }\n}\n\nreturn [{\n  json: {\n    date: new Date().toISOString().split('T')[0],\n    rank: rank || \"Not in Top Charts\",\n    podcastName: foundPodcast?.name || \"Unknown\",\n    country: $('Get Daily Top 200 on Apple Podcasts').first().json.country,\n    genres: $('Get Daily Top 200 on Apple Podcasts').first().json.genres\n  }\n}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -122,7 +123,7 @@
     },
     {
       "parameters": {
-        "content": "Appends new row to your tracking sheet\nEach week adds a new data point\nUse Google Sheets charts to visualize trends\nConsider adding conditional formatting for rank changes",
+        "content": "Appends new row to your tracking sheet\nEach day adds a new data point\nUse Google Sheets charts to visualize trends\nConsider adding conditional formatting for rank changes",
         "height": 400,
         "color": 6
       },
@@ -152,29 +153,29 @@
   ],
   "pinData": {},
   "connections": {
-    "Weekly on Sundays": {
+    "Daily at 10am": {
       "main": [
         [
           {
-            "node": "Get current top 100",
+            "node": "Get Daily Top 200 on Apple Podcasts",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Get current top 100": {
+    "Get Daily Top 200 on Apple Podcasts": {
       "main": [
         [
           {
-            "node": "Set Your Podcast UUID",
+            "node": "Filter for your podcast",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Set Your Podcast UUID": {
+    "Filter for your podcast": {
       "main": [
         [
           {

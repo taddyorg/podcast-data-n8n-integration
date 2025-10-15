@@ -7,6 +7,7 @@ import { requestWithRetry, standardizeResponse, validateUuid } from './shared';
 // ============================================================================
 
 export async function handleGetEpisodeTranscript(
+	operation: Operation,
 	itemIndex: number,
 	context: IExecuteFunctions,
 ): Promise<IDataObject> {

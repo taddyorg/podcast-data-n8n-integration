@@ -7,12 +7,13 @@ import { requestWithPagination, standardizeResponse, parseAndValidateUuids, pars
 // ============================================================================
 
 export async function handleGetLatestEpisodes(
+	operation: Operation,
 	itemIndex: number,
 	context: IExecuteFunctions,
 ): Promise<IDataObject> {
 	const inputType = context.getNodeParameter('latestEpisodesInputType', itemIndex) as string;
-	const numResults = context.getNodeParameter('numResults', itemIndex, 50) as number;
-	const includeTranscript = context.getNodeParameter('includeTranscript', itemIndex, true) as boolean;
+	const numResults = context.getNodeParameter(`${operation}-numResults`, itemIndex, 50) as number;
+	const includeTranscript = context.getNodeParameter(`${operation}-includeTranscript`, itemIndex) as boolean;
 
 	let uuids: string[] = [];
 	let rssUrls: string[] = [];
@@ -56,6 +57,7 @@ export async function handleGetLatestEpisodes(
 	return standardizeResponse(Operation.GET_LATEST_EPISODES, {
 		episodes,
 		totalReturned: episodes.length,
+		...variables,
 	});
 }
 
@@ -110,5 +112,5 @@ export const getLatestEpisodesFields: INodeProperties[] = [
 		},
 	},
 	numResultsField(Operation.GET_LATEST_EPISODES, 25),
-	includeTranscriptField(true, [Operation.GET_LATEST_EPISODES]),
+	includeTranscriptField(false, Operation.GET_LATEST_EPISODES),
 ];

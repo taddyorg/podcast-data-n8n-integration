@@ -144,40 +144,40 @@ export async function handleOperation(
 ): Promise<IDataObject> {
 	switch (operation) {
 		case Operation.CHECK_API_REQUESTS_REMAINING:
-			return handleCheckApiRequestsRemaining(itemIndex, context);
+			return handleCheckApiRequestsRemaining(operation, itemIndex, context);
 
 		case Operation.CHECK_TRANSCRIPT_CREDITS_REMAINING:
-			return handleCheckTranscriptCreditsRemaining(itemIndex, context);
+			return handleCheckTranscriptCreditsRemaining(operation, itemIndex, context);
 
 		case Operation.GET_LATEST_EPISODES:
-			return handleGetLatestEpisodes(itemIndex, context);
+			return handleGetLatestEpisodes(operation, itemIndex, context);
 
 		case Operation.GET_MULTIPLE_PODCASTS:
-			return handleGetMultiplePodcasts(itemIndex, context);
+			return handleGetMultiplePodcasts(operation, itemIndex, context);
 
 		case Operation.GET_MULTIPLE_EPISODES:
-			return handleGetMultipleEpisodes(itemIndex, context);
+			return handleGetMultipleEpisodes(operation, itemIndex, context);
 
 		case Operation.GET_POPULAR_PODCASTS:
-			return handleGetPopularPodcasts(itemIndex, context);
+			return handleGetPopularPodcasts(operation, itemIndex, context);
 
 		case Operation.GET_DAILY_TOP_CHARTS:
-			return handleGetTopCharts(itemIndex, context);
+			return handleGetTopCharts(operation, itemIndex, context);
 
 		case Operation.SEARCH_PODCASTS:
-			return handleSearchPodcasts(itemIndex, context);
+			return handleSearchPodcasts(operation, itemIndex, context);
 
 		case Operation.SEARCH_EPISODES:
-			return handleSearchEpisodes(itemIndex, context);
+			return handleSearchEpisodes(operation, itemIndex, context);
 
 		case Operation.GET_PODCAST_SERIES:
-			return handleGetPodcastSeries(itemIndex, context);
+			return handleGetPodcastSeries(operation, itemIndex, context);
 
 		case Operation.GET_EPISODES_FOR_PODCAST_SERIES:
-			return handleGetEpisodesForPodcastSeries(itemIndex, context);
+			return handleGetEpisodesForPodcastSeries(operation, itemIndex, context);
 
 		case Operation.GENERATE_EPISODE_TRANSCRIPT:
-			return handleGetEpisodeTranscript(itemIndex, context);
+			return handleGetEpisodeTranscript(operation, itemIndex, context);
 
 		default:
 			throw new NodeOperationError(context.getNode(), `Unknown operation: ${operation}`);

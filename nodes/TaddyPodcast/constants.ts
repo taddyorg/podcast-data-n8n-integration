@@ -1,5 +1,8 @@
 import { IDataObject } from 'n8n-workflow';
 
+// API Base URL
+export const API_BASE_URL = 'https://api.taddy.org';
+
 // ============================================================================
 // Enums
 // ============================================================================
@@ -99,14 +102,6 @@ export interface ApiError {
 	message?: string;
 }
 
-// ============================================================================
-// Constants
-// ============================================================================
-
-export const API_BASE_URL = 'https://api.taddy.org';
-export const MAX_API_LIMIT = 25;
-export const MAX_RETRIES = 3;
-
 // Pagination limits per operation (from Taddy API documentation)
 export interface PaginationConfig {
 	limitPerPage: number;  // Max results per page
@@ -128,7 +123,7 @@ export const PAGINATION_CONFIGS: Partial<Record<Operation, PaginationConfig>> = 
 	},
 	[Operation.GET_DAILY_TOP_CHARTS]: {
 		limitPerPage: 25,
-		maxPages: 20,
+		maxPages: 8,
 	},
 	[Operation.GET_EPISODES_FOR_PODCAST_SERIES]: {
 		limitPerPage: 25,
@@ -152,6 +147,8 @@ export const ITUNES_INFO_FRAGMENT = `
 
 export const PODCAST_SERIES_MINI_FRAGMENT = `
 	uuid
+	itunesId
+	rssUrl
 	name
 	imageUrl
 `;
@@ -159,18 +156,21 @@ export const PODCAST_SERIES_MINI_FRAGMENT = `
 export const PODCAST_SERIES_FRAGMENT = `
 	uuid
 	name
+	rssUrl
+	itunesId
 	description(shouldStripHtmlTags: true)
 	imageUrl
 	totalEpisodesCount
 	language
 	genres
-	itunesId
 	popularityRank
 `;
 
 export const PODCAST_SERIES_EXTENDED_FRAGMENT = `
 	uuid
 	name
+	itunesId
+	rssUrl
 	description(shouldStripHtmlTags: true)
 	imageUrl
 	rssUrl

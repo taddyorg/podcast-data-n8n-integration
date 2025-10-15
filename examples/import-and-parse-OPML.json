@@ -6,10 +6,10 @@
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
       "position": [
-        -224,
-        400
+        1152,
+        688
       ],
-      "id": "5b373d76-a88b-4c01-84f3-1e72a90246f9",
+      "id": "332bf6e9-26c4-4487-8e2e-dce86b8133c6",
       "name": "When clicking ‘Execute workflow’"
     },
     {
@@ -20,11 +20,11 @@
       },
       "type": "n8n-nodes-base.stickyNote",
       "position": [
-        -1408,
-        -512
+        -32,
+        -224
       ],
       "typeVersion": 1,
-      "id": "5c50fbb3-36f5-44ab-a2c7-b9051fdf0890",
+      "id": "e787ffd9-1da6-40fd-9f9f-61190bf07357",
       "name": "Sticky Note"
     },
     {
@@ -44,10 +44,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        16,
-        400
+        1392,
+        688
       ],
-      "id": "89381709-e1e2-41ed-a6ae-5d361390d80b",
+      "id": "20edfc45-2f9e-40f0-b21c-33824ac1505d",
       "name": "Paste OPML Here"
     },
     {
@@ -58,11 +58,11 @@
       },
       "type": "n8n-nodes-base.stickyNote",
       "position": [
-        272,
-        80
+        1648,
+        368
       ],
       "typeVersion": 1,
-      "id": "9d8e46cb-4a60-4634-9780-08bdfb341b3a",
+      "id": "3fce3012-d1c1-436f-a1c2-0cf7360476a7",
       "name": "Sticky Note1"
     },
     {
@@ -74,45 +74,43 @@
       },
       "type": "n8n-nodes-base.stickyNote",
       "position": [
-        -64,
-        80
+        1312,
+        368
       ],
       "typeVersion": 1,
-      "id": "f61f4ee1-9d6e-4ec2-baf1-268b9111529a",
+      "id": "940b5fd0-3659-4335-995f-c6f2884e20a4",
       "name": "Sticky Note2"
     },
     {
       "parameters": {
-        "jsCode": "const opmlContent = $input.first().json.OPML;\n\n// Use regex to match all RSS outline elements\nconst rssPattern = /<outline[^>]*type=\"rss\"[^>]*text=\"([^\"]*)\"[^>]*xmlUrl=\"([^\"]*)\"[^>]*\\/>/g;\nconst podcasts = [];\n\nlet match;\nwhile ((match = rssPattern.exec(opmlContent)) !== null) {\n  podcasts.push({\n    name: match[1],\n    rssUrl: match[2]\n  });\n}\n\nreturn podcasts.map(podcast => ({\n  json: {\n    name: podcast.name,\n    rssUrl: podcast.rssUrl\n  }\n}));"
+        "jsCode": "const opmlContent = $input.first().json.OPML;\nconst rssPattern = /<outline[^>]*type=\"rss\"[^>]*xmlUrl=\"([^\"]*)\"[^>]*\\/>/g;\n\nreturn [{\n  json: {\n    rssUrls: [...opmlContent.matchAll(rssPattern)].map(match => match[1]).join(',')\n  }\n}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        336,
-        400
+        1712,
+        688
       ],
-      "id": "b052df64-6fcf-4b88-b9ec-275904d3da41",
+      "id": "0c9a93bc-62c1-4988-b223-c2baabf90686",
       "name": "Parse OPML File"
     },
     {
       "parameters": {
-        "operation": "getEpisodesForPodcastSeries",
-        "episodesInputType": "rssUrl",
-        "rssUrl": "={{ $json.rssUrl }}",
-        "numResults": 15,
-        "includeTranscript": false
+        "operation": "getLatestEpisodes",
+        "latestEpisodesInputType": "rssUrls",
+        "latestEpisodesRssUrls": "={{ $json.rssUrls }}"
       },
       "type": "CUSTOM.taddyPodcast",
       "typeVersion": 1,
       "position": [
-        576,
-        400
+        1952,
+        688
       ],
-      "id": "ad442c1a-d5b2-473c-9a02-5ce6544496fa",
-      "name": "Get Latest Episodes by RSS",
+      "id": "224ca6f8-9b55-48f6-a76b-8d772481111f",
+      "name": "Get Latest Episodes",
       "credentials": {
         "taddyPodcastApi": {
-          "id": "VdezWNeTJukANs8W",
+          "id": "WgCl0l3g1pf1UJQz",
           "name": "Taddy Podcast account"
         }
       }
@@ -152,22 +150,17 @@
           }
         ]
       ]
-    },
-    "Get Latest Episodes by RSS": {
-      "main": [
-        []
-      ]
     }
   },
   "active": false,
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "58aa158d-3cb5-4457-b44c-e5c1ec2d0230",
+  "versionId": "bea27eba-a4c2-4a98-af65-d833ce5a78a1",
   "meta": {
     "templateCredsSetupCompleted": true,
-    "instanceId": "037ca12a37a65de95240f4fc2d09ef5d889852a9a654d7193831532984f75839"
+    "instanceId": "5573683f5e911f04a6e02fa9fc31282ac990fb306ed14a91e7d82ef8946f4fb6"
   },
-  "id": "taVCtBYm4Y5xHufP",
+  "id": "XvKTgPWadTetUElU",
   "tags": []
 }

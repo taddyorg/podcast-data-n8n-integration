@@ -7,16 +7,17 @@ import { requestWithPagination, standardizeResponse, numResultsField } from './s
 // ============================================================================
 
 export async function handleGetPopularPodcasts(
+	operation: Operation,
 	itemIndex: number,
 	context: IExecuteFunctions,
 ): Promise<IDataObject> {
-	const numResults = context.getNodeParameter('numResults', itemIndex) as number;
+	const numResults = context.getNodeParameter(`${operation}-numResults`, itemIndex) as number;
 
 	// Get advanced options
-	const advancedOptions = context.getNodeParameter('advancedOptions', itemIndex, {}) as IDataObject;
+	const advancedOptions = context.getNodeParameter('popularPodcastsAdvancedOptions', itemIndex, {}) as IDataObject;
 
-	const filterByGenres = advancedOptions.filterByGenres as string[] || [];
-	const filterByLanguage = advancedOptions.filterByLanguage as string || '';
+	const filterByGenres = advancedOptions.popularPodcastsFilterByGenres as string[] || [];
+	const filterByLanguage = advancedOptions.popularPodcastsFilterByLanguage as string || '';
 
 	const query = `
 		query GetPopularContent($filterByGenres: [Genre!], $filterByLanguage: Language, $page: Int, $limitPerPage: Int) {
@@ -49,16 +50,13 @@ export async function handleGetPopularPodcasts(
 		'getPopularContent'
 	);
 
-	const popularContent = apiResponse.data?.getPopularContent as Array<{ podcastSeries: PodcastSeries }> || [];
-	const podcasts = popularContent.map(item => item.podcastSeries);
+	const popularContent = apiResponse.data?.getPopularContent as IDataObject || {};
+	const podcasts = popularContent.podcastSeries as PodcastSeries[] || [];
 
 	return standardizeResponse(Operation.GET_POPULAR_PODCASTS, {
 		podcasts,
 		totalReturned: podcasts.length,
-		filters: {
-			genres: filterByGenres.length > 0 ? filterByGenres : 'all',
-			language: filterByLanguage || 'all',
-		},
+		...variables,
 	});
 }
 
@@ -70,7 +68,7 @@ export const getPopularPodcastsFields: INodeProperties[] = [
 	numResultsField(Operation.GET_POPULAR_PODCASTS),
 	{
 		displayName: 'Advanced Options',
-		name: 'advancedOptions',
+		name: 'popularPodcastsAdvancedOptions',
 		type: 'collection',
 		placeholder: 'Add Option',
 		default: {},
@@ -82,7 +80,7 @@ export const getPopularPodcastsFields: INodeProperties[] = [
 		options: [
 			{
 				displayName: 'Filter by Genres',
-				name: 'filterByGenres',
+				name: 'popularPodcastsFilterByGenres',
 				type: 'multiOptions',
 				options: GENRE_OPTIONS,
 				default: [],
@@ -90,7 +88,7 @@ export const getPopularPodcastsFields: INodeProperties[] = [
 			},
 			{
 				displayName: 'Filter by Language',
-				name: 'filterByLanguage',
+				name: 'popularPodcastsFilterByLanguage',
 				type: 'options',
 				options: LANGUAGE_OPTIONS,
 				default: '',

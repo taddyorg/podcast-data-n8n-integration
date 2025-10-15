@@ -17,10 +17,11 @@ import { numResultsField, requestWithPagination, standardizeResponse } from './s
 // ============================================================================
 
 export async function handleGetTopCharts(
+	operation: Operation,
 	itemIndex: number,
 	context: IExecuteFunctions,
 ): Promise<IDataObject> {
-	const numResults = context.getNodeParameter('numResults', itemIndex) as number;
+	const numResults = context.getNodeParameter(`${operation}-numResults`, itemIndex) as number;
 	const chartType = context.getNodeParameter('chartType', itemIndex) as string;
 	const taddyType = context.getNodeParameter('taddyType', itemIndex) as string;
 
@@ -119,7 +120,7 @@ export async function handleGetTopCharts(
 			podcasts,
 			totalReturned: podcasts.length,
 			chartType,
-			taddyType,
+			...variables,
 		});
 	} else {
 		const episodes = topChartsData.podcastEpisodes as PodcastEpisode[] || [];
@@ -127,7 +128,7 @@ export async function handleGetTopCharts(
 			episodes,
 			totalReturned: episodes.length,
 			chartType,
-			taddyType,
+			...variables,
 		});
 	}
 }

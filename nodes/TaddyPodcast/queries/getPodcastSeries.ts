@@ -91,6 +91,7 @@ function validatePodcastInput(inputType: string, itemIndex: number, context: IEx
 // ============================================================================
 
 export async function handleGetPodcastSeries(
+	operation: Operation,
 	itemIndex: number,
 	context: IExecuteFunctions,
 ): Promise<IDataObject> {

@@ -7,6 +7,7 @@ import { requestWithRetry, standardizeResponse } from './shared';
 // ============================================================================
 
 export async function handleCheckApiRequestsRemaining(
+	operation: Operation,
 	itemIndex: number,
 	context: IExecuteFunctions,
 ): Promise<IDataObject> {

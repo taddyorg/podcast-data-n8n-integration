@@ -1,5 +1,5 @@
 {
-  "name": "Search podcasts by topic on Taddy to Airtable library",
+  "name": "Search podcasts by topic on Taddy Podcast API to Airtable library",
   "nodes": [
     {
       "parameters": {

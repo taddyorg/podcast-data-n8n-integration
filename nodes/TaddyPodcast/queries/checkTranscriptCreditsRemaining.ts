@@ -7,6 +7,7 @@ import { requestWithRetry, standardizeResponse } from './shared';
 // ============================================================================
 
 export async function handleCheckTranscriptCreditsRemaining(
+	operation: Operation,
 	itemIndex: number,
 	context: IExecuteFunctions,
 ): Promise<IDataObject> {

@@ -1,5 +1,5 @@
 import { INodeProperties, IExecuteFunctions, IDataObject, NodeOperationError } from 'n8n-workflow';
-import { Operation, ApiResponse, API_BASE_URL, MAX_RETRIES, GENRE_HIERARCHY, PAGINATION_CONFIGS } from '../constants';
+import { Operation, ApiResponse, API_BASE_URL, GENRE_HIERARCHY, PAGINATION_CONFIGS } from '../constants';
 
 // ============================================================================
 // UI Field Definitions
@@ -14,7 +14,7 @@ export const numResultsField = (operation: Operation, defaultValue?: number): IN
 	
 	return {
 		displayName: 'Number of Results to Return',
-		name: 'numResults',
+		name: `${operation}-numResults`,
 		type: 'number',
 		default: defaultValue || paginationConfig.limitPerPage,
 		description: `Number of results to return (1-${paginationConfig.limitPerPage * paginationConfig.maxPages}). This query allows for up to ${paginationConfig.maxPages} pages of ${paginationConfig.limitPerPage} results.`,
@@ -31,15 +31,15 @@ export const numResultsField = (operation: Operation, defaultValue?: number): IN
 	};
 };
 
-export const includeTranscriptField = (defaultValue: boolean, operations: Operation[]): INodeProperties => ({
+export const includeTranscriptField = (defaultValue: boolean, operation: Operation): INodeProperties => ({
 	displayName: 'Include Free Transcript for each episode (if available)',
-	name: 'includeTranscript',
+	name: `${operation}-includeTranscript`,
 	type: 'boolean',
 	default: defaultValue,
 	description: 'Whether to include episode transcripts if the podcast provides the transcript themselves (if available)',
 	displayOptions: {
 		show: {
-			operation: operations,
+			operation: [operation],
 		},
 	},
 });
@@ -220,6 +220,8 @@ export async function makeApiRequest(
 		body: variables ? { query, variables } : { query },
 	});
 }
+
+const MAX_RETRIES = 3;
 
 /**
  * Makes an API request with retry logic and exponential backoff

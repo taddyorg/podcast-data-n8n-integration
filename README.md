@@ -1,28 +1,25 @@
-# n8n-nodes-taddy
+# podcast-data-n8n-node
 
-> Community node for integrating the Taddy Podcast API with your n8n workflows.
+This n8n community node integrates **[Taddy Podcast API](https://taddy.org/developers/podcast-api)** in your **[n8n](https://n8n.io)** workflows.
 
-This n8n community node enables seamless integration of **[Taddy Podcast API](https://taddy.org/developers/podcast-api)** in your **[n8n](https://n8n.io)** workflows.
-
-**[Taddy Podcast API](https://taddy.org/developers/podcast-api)** provides comprehensive podcast and episode data through its GraphQL API, including search, charts, metadata, and AI-powered transcription.
+**[Taddy Podcast API](https://taddy.org/developers/podcast-api)** provides comprehensive podcast and episode data, search, top charts, episode transcripts, and more.
 
 **[n8n](https://n8n.io)** is a powerful, AI-native, open-source workflow automation tool. Connect hundreds of services and rapidly create complex solutions with ease.
 
 ## Features
 
 - **Advanced Search** - Find podcasts and episodes with filters for keywords, genres, language, popularity, date ranges, and duration
+- **Podcast & Episode Data** - Retrieve detailed information about a podcast or episode by UUID, name, RSS URL, or iTunes ID
 - **Charts & Discovery** - Access daily top charts by country or genre, discover trending podcasts
 - **Batch Operations** - Retrieve multiple podcasts or episodes in a single request with automatic pagination
-- **AI Transcription** - Generate or retrieve episode transcripts (uses Taddy API transcript credits)
-- **RSS Integration** - Fetch podcast data using RSS URLs for seamless integration with existing feeds
-- **Quota Management** - Monitor your API request limits and transcript credits
+- **Episode Transcription** - Retrieve podcast-provided episode transcripts or generate transcripts on-demand (uses Taddy API transcript credits)
 
 ## Installation
 
 Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes/installation/) in the n8n community nodes documentation.
 
 1. Go to **Settings > Community Nodes**
-2. Enter: `n8n-nodes-taddy`
+2. Enter: `podcast-data-n8n-node`
 3. Click **Install**
 
 ## Operations
@@ -41,7 +38,7 @@ Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes
 * **Get newly released episodes** - Get the latest episodes from multiple podcasts
 
 ### Transcripts
-* **Generate episode transcript** - Extract or generate transcript for an episode (uses Taddy API transcript credits)
+* **Generate episode transcript** - Extract or generate transcript for an episode (generating transcripts uses Taddy API transcript credits)
 
 ### Account Management
 * **Check API requests remaining** - Monitor your monthly Taddy API request quota

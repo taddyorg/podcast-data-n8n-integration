@@ -7,84 +7,85 @@ import { requestWithPagination, standardizeResponse, parseDate, numResultsField,
 // ============================================================================
 
 export async function handleSearchEpisodes(
+	operation: Operation,
 	itemIndex: number,
 	context: IExecuteFunctions,
 ): Promise<IDataObject> {
-	const searchQuery = context.getNodeParameter('searchQuery', itemIndex) as string;
-	const numResults = context.getNodeParameter('numResults', itemIndex) as number;
+	const searchQuery = context.getNodeParameter('episodeSearchQuery', itemIndex) as string;
+	const numResults = context.getNodeParameter(`${operation}-numResults`, itemIndex) as number;
 
 	const variables: SearchVariables = { term: searchQuery };
 	variables.filterForTypes = ['PODCASTEPISODE'];
 
 	// Get advanced options
-	const advancedOptions = context.getNodeParameter('advancedOptions', itemIndex, {}) as IDataObject;
+	const advancedOptions = context.getNodeParameter('episodeAdvancedOptions', itemIndex, {}) as IDataObject;
 
 	// Content filters
-	const filterForGenres = advancedOptions.filterForGenres as string[] || [];
+	const filterForGenres = advancedOptions.episodeFilterForGenres as string[] || [];
 	if (filterForGenres.length > 0) {
 		variables.filterForGenres = expandGenres(filterForGenres);
 	}
 
-	const filterForLanguages = advancedOptions.filterForLanguages as string[] || [];
+	const filterForLanguages = advancedOptions.episodeFilterForLanguages as string[] || [];
 	if (filterForLanguages.length > 0) {
 		variables.filterForLanguages = filterForLanguages;
 	}
 
-	const filterForPodcastContentType = advancedOptions.filterForPodcastContentType as string[] || [];
+	const filterForPodcastContentType = advancedOptions.episodeFilterForPodcastContentType as string[] || [];
 	if (filterForPodcastContentType.length > 0) {
 		variables.filterForPodcastContentType = filterForPodcastContentType;
 	}
 
-	const isSafeMode = advancedOptions.isSafeMode as boolean || false;
+	const isSafeMode = advancedOptions.episodeIsSafeMode as boolean || false;
 	if (isSafeMode) {
 		variables.isSafeMode = isSafeMode;
 	}
 
 	// Search behavior
-	const matchBy = advancedOptions.matchBy as string || '';
+	const matchBy = advancedOptions.episodeMatchBy as string || '';
 	if (matchBy) {
 		variables.matchBy = matchBy;
 	}
 
-	const sortBy = advancedOptions.sortBy as string || '';
+	const sortBy = advancedOptions.episodeSortBy as string || '';
 	if (sortBy) {
 		variables.sortBy = sortBy;
 	}
 
 	// Episode-specific filters
-	const filterForHasTranscript = advancedOptions.filterForHasTranscript as boolean || false;
+	const filterForHasTranscript = advancedOptions.episodeFilterForHasTranscript as boolean || false;
 	if (filterForHasTranscript) {
 		variables.filterForHasTranscript = filterForHasTranscript;
 	}
 
-	const filterForDurationGreaterThan = advancedOptions.filterForDurationGreaterThan as number || 0;
+	const filterForDurationGreaterThan = advancedOptions.episodeFilterForDurationGreaterThan as number || 0;
 	if (filterForDurationGreaterThan) {
 		variables.filterForDurationGreaterThan = filterForDurationGreaterThan;
 	}
 
-	const filterForDurationLessThan = advancedOptions.filterForDurationLessThan as number || 0;
+	const filterForDurationLessThan = advancedOptions.episodeFilterForDurationLessThan as number || 0;
 	if (filterForDurationLessThan) {
 		variables.filterForDurationLessThan = filterForDurationLessThan;
 	}
 
 	// Date filters
-	const filterForPublishedAfter = advancedOptions.filterForPublishedAfter as string || '';
+	const filterForPublishedAfter = advancedOptions.episodeFilterForPublishedAfter as string || '';
 	if (filterForPublishedAfter) {
 		variables.filterForPublishedAfter = parseDate(filterForPublishedAfter, context);
 	}
 
-	const filterForPublishedBefore = advancedOptions.filterForPublishedBefore as string || '';
+	const filterForPublishedBefore = advancedOptions.episodeFilterForPublishedBefore as string || '';
 	if (filterForPublishedBefore) {
 		variables.filterForPublishedBefore = parseDate(filterForPublishedBefore, context);
 	}
 
 	// Series filters
-	const filterForSeriesUuids = advancedOptions.filterForSeriesUuids as string || '';
+	const filterForSeriesUuids = advancedOptions.episodeFilterForSeriesUuids as string || '';
 	if (filterForSeriesUuids) {
 		variables.filterForSeriesUuids = filterForSeriesUuids.split(',').map(uuid => uuid.trim()).filter(uuid => uuid);
 	}
 
-	const filterForNotInSeriesUuids = advancedOptions.filterForNotInSeriesUuids as string || '';
+	const filterForNotInSeriesUuids = advancedOptions.episodeFilterForNotInSeriesUuids as string || '';
 	if (filterForNotInSeriesUuids) {
 		variables.filterForNotInSeriesUuids = filterForNotInSeriesUuids.split(',').map(uuid => uuid.trim()).filter(uuid => uuid);
 	}
@@ -156,6 +157,7 @@ export async function handleSearchEpisodes(
 		searchTerm: searchQuery,
 		podcastEpisodes: episodeResults,
 		totalReturned: episodeResults.length,
+		...variables,
 	});
 }
 
@@ -166,7 +168,7 @@ export async function handleSearchEpisodes(
 export const searchEpisodesFields: INodeProperties[] = [
 	{
 		displayName: 'Search Query',
-		name: 'searchQuery',
+		name: 'episodeSearchQuery',
 		type: 'string',
 		default: '',
 		placeholder: 'e.g., technology, joe rogan, true crime',
@@ -180,7 +182,7 @@ export const searchEpisodesFields: INodeProperties[] = [
 	numResultsField(Operation.SEARCH_EPISODES),
 	{
 		displayName: 'Advanced Options',
-		name: 'advancedOptions',
+		name: 'episodeAdvancedOptions',
 		type: 'collection',
 		placeholder: 'Add Option',
 		default: {},
@@ -192,7 +194,7 @@ export const searchEpisodesFields: INodeProperties[] = [
 		options: [
 			{
 				displayName: 'Genres',
-				name: 'filterForGenres',
+				name: 'episodeFilterForGenres',
 				type: 'multiOptions',
 				options: GENRE_OPTIONS,
 				default: [],
@@ -200,7 +202,7 @@ export const searchEpisodesFields: INodeProperties[] = [
 			},
 			{
 				displayName: 'Languages',
-				name: 'filterForLanguages',
+				name: 'episodeFilterForLanguages',
 				type: 'multiOptions',
 				options: LANGUAGE_OPTIONS,
 				default: [],
@@ -208,7 +210,7 @@ export const searchEpisodesFields: INodeProperties[] = [
 			},
 			{
 				displayName: 'Content Type',
-				name: 'filterForPodcastContentType',
+				name: 'episodeFilterForPodcastContentType',
 				type: 'multiOptions',
 				options: PODCAST_CONTENT_TYPE_OPTIONS,
 				default: [],
@@ -216,7 +218,7 @@ export const searchEpisodesFields: INodeProperties[] = [
 			},
 			{
 				displayName: 'Safe Mode',
-				name: 'isSafeMode',
+				name: 'episodeIsSafeMode',
 				type: 'boolean',
 				default: false,
 				description: 'Only return safe (non-explicit) content',
@@ -224,7 +226,7 @@ export const searchEpisodesFields: INodeProperties[] = [
 			},
 			{
 				displayName: 'Match Strategy',
-				name: 'matchBy',
+				name: 'episodeMatchBy',
 				type: 'options',
 				options: [
 					{ name: 'All Terms', value: 'ALL_TERMS' },
@@ -236,7 +238,7 @@ export const searchEpisodesFields: INodeProperties[] = [
 			},
 			{
 				displayName: 'Sort By',
-				name: 'sortBy',
+				name: 'episodeSortBy',
 				type: 'options',
 				options: [
 					{ name: 'Relevance', value: 'EXACTNESS' },
@@ -247,7 +249,7 @@ export const searchEpisodesFields: INodeProperties[] = [
 			},
 			{
 				displayName: 'Has Transcript',
-				name: 'filterForHasTranscript',
+				name: 'episodeFilterForHasTranscript',
 				type: 'boolean',
 				default: false,
 				description: 'Only return episodes with transcripts available',
@@ -255,7 +257,7 @@ export const searchEpisodesFields: INodeProperties[] = [
 			},
 			{
 				displayName: 'Published After',
-				name: 'filterForPublishedAfter',
+				name: 'episodeFilterForPublishedAfter',
 				type: 'dateTime',
 				default: '',
 				description: 'Only return content published after this date',
@@ -263,7 +265,7 @@ export const searchEpisodesFields: INodeProperties[] = [
 			},
 			{
 				displayName: 'Published Before',
-				name: 'filterForPublishedBefore',
+				name: 'episodeFilterForPublishedBefore',
 				type: 'dateTime',
 				default: '',
 				description: 'Only return content published before this date',
@@ -271,7 +273,7 @@ export const searchEpisodesFields: INodeProperties[] = [
 			},
 			{
 				displayName: 'Minimum Duration (seconds)',
-				name: 'filterForDurationGreaterThan',
+				name: 'episodeFilterForDurationGreaterThan',
 				type: 'number',
 				default: 0,
 				description: 'Only return episodes longer than this duration',
@@ -279,7 +281,7 @@ export const searchEpisodesFields: INodeProperties[] = [
 			},
 			{
 				displayName: 'Maximum Duration (seconds)',
-				name: 'filterForDurationLessThan',
+				name: 'episodeFilterForDurationLessThan',
 				type: 'number',
 				default: 0,
 				description: 'Only return episodes shorter than this duration',
@@ -287,7 +289,7 @@ export const searchEpisodesFields: INodeProperties[] = [
 			},
 			{
 				displayName: 'Include Only Series (UUIDs)',
-				name: 'filterForSeriesUuids',
+				name: 'episodeFilterForSeriesUuids',
 				type: 'string',
 				default: '',
 				description: 'Search within specific podcasts only',
@@ -295,7 +297,7 @@ export const searchEpisodesFields: INodeProperties[] = [
 			},
 			{
 				displayName: 'Exclude Series (UUIDs)',
-				name: 'filterForNotInSeriesUuids',
+				name: 'episodeFilterForNotInSeriesUuids',
 				type: 'string',
 				default: '',
 				description: 'Exclude specific podcasts from search',

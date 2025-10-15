@@ -7,11 +7,12 @@ import { requestWithPagination, standardizeResponse, parseDate, numResultsField,
 // ============================================================================
 
 export async function handleSearchPodcasts(
+	operation: Operation,
 	itemIndex: number,
 	context: IExecuteFunctions,
 ): Promise<IDataObject> {
 	const searchQuery = context.getNodeParameter('searchQuery', itemIndex) as string;
-	const numResults = context.getNodeParameter('numResults', itemIndex) as number;
+	const numResults = context.getNodeParameter(`${operation}-numResults`, itemIndex) as number;
 
 	const variables: SearchVariables = { term: searchQuery };
 	variables.filterForTypes = ['PODCASTSERIES'];
@@ -160,6 +161,7 @@ export async function handleSearchPodcasts(
 		searchTerm: searchQuery,
 		podcastSeries: podcastResults,
 		totalReturned: podcastResults.length,
+		...variables,
 	});
 }
 

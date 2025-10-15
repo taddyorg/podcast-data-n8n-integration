@@ -1,5 +1,5 @@
 import { INodeProperties, IExecuteFunctions, IDataObject } from 'n8n-workflow';
-import { Operation, PodcastEpisode, EPISODE_EXTENDED_FRAGMENT, MAX_API_LIMIT } from '../constants';
+import { Operation, PodcastEpisode, EPISODE_EXTENDED_FRAGMENT } from '../constants';
 import { requestWithRetry, standardizeResponse, parseAndValidateUuids } from './shared';
 
 // ============================================================================
@@ -7,11 +7,12 @@ import { requestWithRetry, standardizeResponse, parseAndValidateUuids } from './
 // ============================================================================
 
 export async function handleGetMultipleEpisodes(
+	operation: Operation,
 	itemIndex: number,
 	context: IExecuteFunctions,
 ): Promise<IDataObject> {
 	const uuidsInput = context.getNodeParameter('episodeUuids', itemIndex) as string;
-	const uuids = parseAndValidateUuids(uuidsInput, MAX_API_LIMIT, context);
+	const uuids = parseAndValidateUuids(uuidsInput, 25, context);
 
 	const query = `
 		query GetMultipleEpisodes($uuids: [ID]) {
