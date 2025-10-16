@@ -1,0 +1,309 @@
+{
+  "name": "Get the transcript and AI Summary for any episode from Taddy Podcast API to Notion",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -32,
+        1152
+      ],
+      "id": "4919ae60-7dca-4f08-8f01-4bc8e499585a",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "content": "## Get the transcript and AI Summary for any episode from Taddy Podcast API to Notion\n\nThis workflow gets the details about an episode. If a transcript is provided by the podcast creators, it uses that, or it automatically generates a full transcript using Taddy Podcast API transcription credits. It then sends the transcript to OpenAI to create a summary, extract key points, and identify action items. Everything is saved to a Notion database for easy searching and reference.\n\n## Requirements\n- Taddy API account (sign up at taddy.org/developers)\n- OpenAI API key (or Claude, Gemini, etc.)\n- Notion integration configured\n- Self-hosted n8n instance (required for community nodes)\n\n## How to customize\n- Add sentiment analysis or topic extraction\n- Send summaries via email instead of Notion\n- Use other template for all your podcast subscriptions\n- Extract specific insights like quotes, timestamps, or speakers",
+        "height": 464,
+        "width": 1312
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        368,
+        320
+      ],
+      "typeVersion": 1,
+      "id": "4436f012-c094-4e54-ae43-e9df75089b49",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "operation": "getEpisodeTranscript",
+        "episodeUuid": "={{ $json.UUID }}",
+        "includeDetailedTranscript": true
+      },
+      "type": "CUSTOM.taddyPodcast",
+      "typeVersion": 1,
+      "position": [
+        832,
+        1296
+      ],
+      "id": "c28bf894-a0bf-4f5d-a6ce-0bc588bdb01b",
+      "name": "Generate Episode Transcript",
+      "credentials": {
+        "taddyPodcastApi": {
+          "id": "WgCl0l3g1pf1UJQz",
+          "name": "Taddy Podcast account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Analyze this podcast episode transcript and provide:\n\n1. A concise 2-3 sentence summary\n2. 5-7 key points or takeaways\n3. Notable quotes (if any)\n4. Main topics discussed\n\nTranscript:\n{{ $json.episode.transcript }} || "
+            },
+            {
+              "content": "You are a podcast transcript analyzer. Always respond with valid JSON in this exact format:\n{\n  \"summary\": \"2-3 sentence concise summary\",\n  \"keyPoints\": [\"point 1\", \"point 2\", \"point 3\", \"point 4\", \"point 5\"],\n  \"quotes\": [\"notable quote 1\", \"notable quote 2\"],\n  \"topics\": [\"topic 1\", \"topic 2\", \"topic 3\"]\n}",
+              "role": "system"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        1184,
+        1136
+      ],
+      "id": "bb190840-7ff7-43ce-8023-c9f2726c8b1b",
+      "name": "Generate Summary"
+    },
+    {
+      "parameters": {
+        "jsCode": "const aiResponse = JSON.parse($input.first().json.message.content);\n\nreturn [{\n  json: {\n    summary: aiResponse.summary,\n    keyPoints: aiResponse.keyPoints.join('\\n• '),\n    quotes: aiResponse.quotes.join('\\n\\n'),\n    topics: aiResponse.topics.join(', ')\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1536,
+        1136
+      ],
+      "id": "a3f63ff5-4e2e-4684-8e29-52385ad45b6b",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "databaseId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "propertiesUi": {
+          "propertyValues": [
+            {},
+            {},
+            {},
+            {}
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        1792,
+        1136
+      ],
+      "id": "acbd0930-8a13-47bb-b192-0bc8861ddc4d",
+      "name": "Create a database page"
+    },
+    {
+      "parameters": {
+        "content": "Map fields to your Notion database schema\nAdd episode metadata (duration, publish date, etc.)\nLink to podcast page if you have a podcasts database\nConsider adding tags for topics or categories",
+        "height": 416,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1712,
+        912
+      ],
+      "typeVersion": 1,
+      "id": "fa2921a7-b745-43a7-aa50-3a94655b175d",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "Customize the prompt for your use case:\n- Extract key quotes and timestamps\n- Identify speakers and topics\n- Generate show notes or blog posts\n- Analyze sentiment or themes\nAdjust temperature and max tokens as needed",
+        "height": 416,
+        "width": 288,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1152,
+        912
+      ],
+      "typeVersion": 1,
+      "id": "1d1ad91d-2136-4a3d-826f-7b5d0e5e8711",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "Enter the podcast name and episode name to get Episode details.",
+        "height": 400,
+        "width": 224,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        176,
+        960
+      ],
+      "typeVersion": 1,
+      "id": "778bc0bb-02f5-44fe-aba1-723ddb3ec5e7",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "operation": "getPodcastEpisode",
+        "getPodcastEpisode-includeTranscript": true
+      },
+      "type": "CUSTOM.taddyPodcast",
+      "typeVersion": 1,
+      "position": [
+        240,
+        1152
+      ],
+      "id": "be6f8eec-b10d-4433-b5da-c21ddd4f6845",
+      "name": "Get Episode Details",
+      "credentials": {
+        "taddyPodcastApi": {
+          "id": "WgCl0l3g1pf1UJQz",
+          "name": "Taddy Podcast account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "452260e1-2a3b-4f18-826a-65b2130c8b66",
+              "leftValue": "={{ $json.episode.transcript }}",
+              "rightValue": "",
+              "operator": {
+                "type": "array",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        528,
+        1152
+      ],
+      "id": "43a9e604-7a87-4bf7-981a-7e02b8ab1418",
+      "name": "If transcript exists"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get Episode Details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Episode Transcript": {
+      "main": [
+        [
+          {
+            "node": "Generate Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Summary": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Create a database page",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Episode Details": {
+      "main": [
+        [
+          {
+            "node": "If transcript exists",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If transcript exists": {
+      "main": [
+        [
+          {
+            "node": "Generate Summary",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Generate Episode Transcript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "ebeed7d8-cc17-4547-a0f7-2f029291f68e",
+  "meta": {
+    "instanceId": "5573683f5e911f04a6e02fa9fc31282ac990fb306ed14a91e7d82ef8946f4fb6"
+  },
+  "id": "lRPc9J2Zm9aqiTnL",
+  "tags": []
+}

@@ -32,6 +32,7 @@ Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes
 
 ### Podcast & Episode Data
 * **Get podcast details** - Retrieve detailed information about a podcast by UUID, name, RSS URL, or iTunes ID
+* **Get episode details** - Retrieve detailed information about an episode by podcast name and episode name
 * **Get episodes for a podcast** - Get newly released episodes for a specific podcast (supports UUID, name, RSS URL, or iTunes ID)
 * **Get multiple podcasts** - Batch retrieve multiple podcasts by UUIDs in a single request
 * **Get multiple episodes** - Batch retrieve multiple episodes by UUIDs in a single request
@@ -55,11 +56,13 @@ To use this node, you need a [Taddy API](https://taddy.org) account:
 ## Example Workflows
 
 Example workflows demonstrating common use cases are available:
-- **Podcast Monitoring** - Track new episodes from your favorite podcasts
+- **Podcast Monitoring** - Track newly released episodes from your favorite podcasts
 - **Transcript Generation** - Automatically generate and process episode transcripts
-- **Chart Tracking** - Monitor podcast rankings over time
+- **Apple Podcasts Chart Tracking** - Monitor podcast rankings over time by genre and country
 - **Search Podcasts** - Use advanced search to find podcasts and store them in Airtable
-- **Import OPML File** - Import the podcasts you subscribe to from your favorite player and find latest episodes
+- **Search Episodes** - Use advanced search to find episodes and store them in Airtable
+- **Import OPML File** - Import the podcasts you subscribe to from your favorite player
+- **Import OPML File and Generate Transcripts for All Your Podcasts** - Import the podcasts you subscribe to from your favorite player and find latest episodes and generate transcripts for them
 
 _(Links to be added once node is published to n8n and templates submitted here: https://creators.n8n.io/workflows/edit)_
 
@@ -75,6 +78,7 @@ Tested with n8n version 1.39.1 and above.
 
 ## Version History
 
+* **1.0.0** - Added example workflows / templates
 * **0.3.0** - Added new queries, pagination, and error handling
 * **0.2.3** - Refactored into separate operations
 * **0.2.2** - Added icon support

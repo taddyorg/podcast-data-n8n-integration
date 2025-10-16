@@ -1,30 +1,30 @@
 {
-  "name": "Upload and Parse OPML File",
+  "name": "Import Your Podcast Subscriptions via OPML",
   "nodes": [
     {
       "parameters": {},
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
       "position": [
-        1152,
-        688
+        1072,
+        -208
       ],
-      "id": "332bf6e9-26c4-4487-8e2e-dce86b8133c6",
+      "id": "7df386f8-2ac6-4db6-88a8-8390defbd5b8",
       "name": "When clicking ‘Execute workflow’"
     },
     {
       "parameters": {
-        "content": "## Import OPML podcast subscriptions to get latest episodes\n\n## Who's it for\nPodcast listeners who want to aggregate new episodes from all their subscriptions in one place, or migrate their subscriptions to a custom feed reader.\n\n## How it works\nExport your podcast subscriptions as an OPML file from your podcast app, paste the file contents into this workflow, and it will automatically fetch the latest episodes from all your subscribed podcasts. Save the results to Notion, Google Sheets, or any other destination for a unified view of new content.\n\n## Requirements\n- Taddy API account (sign up at taddy.org)\n- OPML file from your podcast app\n- Google Sheets or Notion (for saving results)\n- Self-hosted n8n instance (required for community nodes)\n\n## How to export OPML from popular apps\n**Apple Podcasts (iOS/Mac):**\n- Settings → Export Subscriptions → Share OPML file\n\n**Overcast:**\n- Settings → Export OPML → Copy to clipboard\n\n**Pocket Casts:**\n- Settings → Import/Export → Export subscriptions\n\n**Spotify:** Does not support OPML export\n\n**Most podcast apps** have OPML export in Settings or Account\n\n## How to set up\n1. Install the Taddy community node\n2. Export OPML from your podcast app\n3. Open the OPML file in a text editor and copy all contents\n4. Paste contents into the Set Fields node\n5. Run the workflow to fetch latest episodes\n6. Results will be saved to your chosen destination\n\n## How to customize\n- Limit to episodes from last 24-48 hours\n- Filter by specific genres or keywords\n- Send digest email instead of saving\n- Schedule daily to create automated podcast digest\n- Add transcripts for searchable archive",
-        "height": 1152,
-        "width": 1008
+        "content": "## Import Your Podcast Subscriptions via OPML\n\n## How It Works\n1. **Export** your podcast subscriptions from your podcast app as an OPML file\n2. **Paste** the OPML file contents into the n8n workflow\n3. **Extract** RSS feed URLs automatically\n\n## How to Export an OPML from your podcast player\n- **Apple Podcasts (iOS/Mac)**: Go to Settings → Export Subscriptions → Share OPML file\n- **Overcast**: Settings → Export OPML → Copy to clipboard\n- **Pocket Casts**: Settings → Import/Export → Export subscriptions\n- **Spotify**: Does not support OPML export, but use a Spotify n8n node to get your Spotify podcast details.\n- Most podcast apps have OPML export in the app's settings screen.\n\n## What's next\n- Use other Taddy Podcast API nodes to get latest episodes or transcripts for any episode (see other workflows from Taddy Podcast API)",
+        "height": 480,
+        "width": 928
       },
       "type": "n8n-nodes-base.stickyNote",
       "position": [
-        -32,
-        -224
+        976,
+        -976
       ],
       "typeVersion": 1,
-      "id": "e787ffd9-1da6-40fd-9f9f-61190bf07357",
+      "id": "93d4b255-8a0a-4074-a63a-88c19367ab9d",
       "name": "Sticky Note"
     },
     {
@@ -44,41 +44,41 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        1392,
-        688
+        1344,
+        -208
       ],
-      "id": "20edfc45-2f9e-40f0-b21c-33824ac1505d",
+      "id": "4c6db71a-723b-4ace-b883-3cf825abc13e",
       "name": "Paste OPML Here"
     },
     {
       "parameters": {
-        "content": "Extracts podcast names and RSS URLs from OPML\n\nEach podcast becomes a separate item for processing\n\nHandles all standard OPML formats from podcast apps",
-        "height": 496,
+        "content": "Extracts RSS feed URLs from your OPML file and formats them for the Taddy Podcast API node.\n\nOutput: Comma-separated list of RSS URLs",
+        "height": 400,
         "color": 5
       },
       "type": "n8n-nodes-base.stickyNote",
       "position": [
-        1648,
-        368
+        1600,
+        -416
       ],
       "typeVersion": 1,
-      "id": "3fce3012-d1c1-436f-a1c2-0cf7360476a7",
+      "id": "e197f79b-adb4-4682-a287-3ad00a5158f5",
       "name": "Sticky Note1"
     },
     {
       "parameters": {
-        "content": "Paste your entire OPML file contents here\n\nOPML is an XML file format that lists all your podcast subscriptions with their RSS feed URLs. It can be found in most Podcast Players as an export.\n\nNOTE: Spotify currently does not support OPML Export\n\nCopy everything from <?xml to </opml>",
-        "height": 496,
+        "content": "Paste your entire OPML file contents into this node.\n\nAn OPML File is an XML file format that lists all your podcast subscriptions (name and RSS urls).\n\nCopy everything from <?xml to </opml>",
+        "height": 400,
         "width": 256,
         "color": 5
       },
       "type": "n8n-nodes-base.stickyNote",
       "position": [
-        1312,
-        368
+        1264,
+        -416
       ],
       "typeVersion": 1,
-      "id": "940b5fd0-3659-4335-995f-c6f2884e20a4",
+      "id": "86568eeb-f9b2-483c-ae9c-ff95f71b4c1c",
       "name": "Sticky Note2"
     },
     {
@@ -88,32 +88,11 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1712,
-        688
+        1664,
+        -208
       ],
-      "id": "0c9a93bc-62c1-4988-b223-c2baabf90686",
+      "id": "ff56bab8-39c5-4850-886e-c9bebf5d57c2",
       "name": "Parse OPML File"
-    },
-    {
-      "parameters": {
-        "operation": "getLatestEpisodes",
-        "latestEpisodesInputType": "rssUrls",
-        "latestEpisodesRssUrls": "={{ $json.rssUrls }}"
-      },
-      "type": "CUSTOM.taddyPodcast",
-      "typeVersion": 1,
-      "position": [
-        1952,
-        688
-      ],
-      "id": "224ca6f8-9b55-48f6-a76b-8d772481111f",
-      "name": "Get Latest Episodes",
-      "credentials": {
-        "taddyPodcastApi": {
-          "id": "WgCl0l3g1pf1UJQz",
-          "name": "Taddy Podcast account"
-        }
-      }
     }
   ],
   "pinData": {},
@@ -142,13 +121,7 @@
     },
     "Parse OPML File": {
       "main": [
-        [
-          {
-            "node": "Get Latest Episodes by RSS",
-            "type": "main",
-            "index": 0
-          }
-        ]
+        []
       ]
     }
   },
@@ -156,11 +129,10 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "bea27eba-a4c2-4a98-af65-d833ce5a78a1",
+  "versionId": "c10f2bb2-c424-4d22-a43c-2d20bb4bd215",
   "meta": {
-    "templateCredsSetupCompleted": true,
     "instanceId": "5573683f5e911f04a6e02fa9fc31282ac990fb306ed14a91e7d82ef8946f4fb6"
   },
-  "id": "XvKTgPWadTetUElU",
+  "id": "EGGXvJhfYvE6iC8z",
   "tags": []
 }

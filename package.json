@@ -1,6 +1,6 @@
 {
   "name": "podcast-data-n8n-node",
-  "version": "0.3.0",
+  "version": "1.0.0",
   "description": "Extract data from 4M+ podcasts via Taddy API - search shows, get episodes, extract transcripts for podcast analysis workflows",
   "keywords": [
     "n8n-community-node-package",

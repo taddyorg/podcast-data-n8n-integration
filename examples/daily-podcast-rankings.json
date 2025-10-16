@@ -1,12 +1,11 @@
 {
-  "name": "Track your podcast's rankings over time with Taddy Podcast API to Google Sheets",
+  "name": "Monitor Apple Podcasts Charts for one or more podcasts with Taddy Podcast API to Google Sheets",
   "nodes": [
     {
       "parameters": {
         "rule": {
           "interval": [
             {
-              "field": "days",
               "triggerAtHour": 10
             }
           ]
@@ -15,81 +14,60 @@
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
       "position": [
-        -448,
-        240
+        -80,
+        864
       ],
-      "id": "53396251-7768-4019-8c26-67d7c9957c5b",
+      "id": "8cce4b33-cac1-4fa1-a945-ea831939cb27",
       "name": "Daily at 10am"
     },
     {
       "parameters": {
-        "content": "## Track your podcast's rankings daily on Apple Podcasts with Taddy Podcast API to Google Sheets\n\n## Who's it for\nPodcast creators, producers, and marketing teams who want to monitor their podcast's performance on podcast charts over time.\n\n## How it works\nEvery day, this workflow checks the top 200 podcasts on Apple Podcasts charts, you can specify the genre, finds your podcast's position (if ranked), and logs it to a Google Sheet with a timestamp. Track your growth over time and get alerted when you break into new ranking tiers.\n\n## Requirements\n- Taddy API account (sign up at taddy.org)\n- Google Sheets with tracking spreadsheet\n- Self-hosted n8n instance (required for community nodes)\n\n## How to set up\n1. Install the Taddy community node from Settings > Community Nodes\n2. Add your Taddy API credentials\n3. Create a Google Sheet with columns: Date, Genre, Rank, Podcast Name, Total Episodes\n4. Update the Set Fields node with your podcast UUID and genre\n5. Adjust the schedule trigger (default: every day at 10am)\n6. Run once to test\n\n## How to customize\n- Track multiple podcasts by adding loops\n- Monitor multiple genres\n- Add Slack alerts when rank improves or drops significantly\n- Calculate day-over-day change with a formula node\n- Export weekly or monthly reports",
-        "height": 768,
-        "width": 912
+        "content": "## Monitor Apple Podcasts Charts for one or more podcasts with Taddy Podcast API to Google Sheets\n\nThis workflow checks the Top 200 podcasts on Apple Podcasts charts. Each genre and country has its own Top chart, this example checks the Top 200 Business Podcasts. Set your podcast's uuid and track your podcast's position over time, and logs it to a Google Sheet with a timestamp and get alerted when you break into new ranking tiers.\n\n## Requirements\n- Taddy API account (sign up at taddy.org/developers)\n- Google Sheets with tracking spreadsheet\n- Self-hosted n8n instance (required for community nodes)\n\n## How to customize\n- Add Slack alerts when rank improves or drops significantly\n- Calculate day-over-day change with a formula node\n- Export weekly or monthly reports",
+        "height": 464,
+        "width": 1008
       },
       "type": "n8n-nodes-base.stickyNote",
       "position": [
-        -464,
-        -896
+        16,
+        96
       ],
       "typeVersion": 1,
-      "id": "5d8f23cb-674b-405b-9ead-e2fe05b4e3b1",
+      "id": "d24e9387-1632-49c8-8cee-149310eb3698",
       "name": "Sticky Note"
     },
     {
       "parameters": {
         "operation": "getDailyTopCharts",
-        "numResults": 200
+        "getDailyTopCharts-numResults": 200,
+        "chartType": "byGenre",
+        "genres": "PODCASTSERIES_BUSINESS"
       },
       "type": "CUSTOM.taddyPodcast",
       "typeVersion": 1,
       "position": [
-        -240,
-        240
+        128,
+        864
       ],
-      "id": "78902b08-bdae-48d2-bb94-0dfe621edf15",
+      "id": "019b3c28-59a9-470c-9ce9-5a643ad99efd",
       "name": "Get Daily Top 200 on Apple Podcasts",
       "credentials": {
         "taddyPodcastApi": {
-          "id": "VdezWNeTJukANs8W",
+          "id": "WgCl0l3g1pf1UJQz",
           "name": "Taddy Podcast account"
         }
       }
     },
     {
       "parameters": {
-        "assignments": {
-          "assignments": [
-            {
-              "id": "60c9c765-3ec2-455a-b8ab-753d9b906ac3",
-              "name": "myPodcast",
-              "value": "d682a935-ad2d-46ee-a0ac-139198b83bcc",
-              "type": "string"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 3.4,
-      "position": [
-        -32,
-        240
-      ],
-      "id": "af2862a3-a371-4999-8b05-38be25d7d6af",
-      "name": "Filter for your podcast"
-    },
-    {
-      "parameters": {
-        "jsCode": "const podcastUUID = $('Filter for your podcast').first().json.myPodcast.trim();\nconst chartResults = $('Get Daily Top 200 on Apple Podcasts').first().json.podcasts;\n\nlet rank = null;\nlet foundPodcast = null;\n\nfor (let i = 0; i < chartResults.length; i++) {\n  if (chartResults[i].uuid.trim() === podcastUUID) {\n    rank = i + 1;\n    foundPodcast = chartResults[i];\n    break;\n  }\n}\n\nreturn [{\n  json: {\n    date: new Date().toISOString().split('T')[0],\n    rank: rank || \"Not in Top Charts\",\n    podcastName: foundPodcast?.name || \"Unknown\",\n    country: $('Get Daily Top 200 on Apple Podcasts').first().json.country,\n    genres: $('Get Daily Top 200 on Apple Podcasts').first().json.genres\n  }\n}];"
+        "jsCode": "const podcastUuids = $('Filter for one or more podcasts').first().json.podcasts.split(',').map(uuid => uuid.trim());\nconst chartResults = $('Get Daily Top 200 on Apple Podcasts').first().json.podcasts;\nconst chartData = $('Get Daily Top 200 on Apple Podcasts').first().json;\n\nreturn podcastUuids\n  .map(uuid => {\n    const rankIndex = chartResults.findIndex(podcast => podcast.uuid.trim() === uuid);\n    return rankIndex >= 0 ? { uuid, rankIndex, podcast: chartResults[rankIndex] } : null;\n  })\n  .filter(item => item !== null)\n  .map(item => ({\n    json: {\n      date: new Date().toISOString().split('T')[0],\n      rank: item.rankIndex + 1,\n      podcastName: item.podcast.name,\n      podcastUuid: item.uuid,\n      country: chartData.country,\n      genres: chartData.genres\n    }\n  }));"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        208,
-        240
+        672,
+        864
       ],
-      "id": "21183b18-13e1-4a47-87c3-7b9f0fb2c550",
+      "id": "ba5f9ec2-99f9-4bc3-a476-932a789c03f5",
       "name": "Find Rank"
     },
     {
@@ -109,46 +87,78 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        448,
-        240
+        960,
+        864
       ],
-      "id": "4df7d6e0-5c71-4dd5-8504-183e4949d4b0",
-      "name": "Log rank to tracking sheet",
-      "credentials": {
-        "googleSheetsOAuth2Api": {
-          "id": "LpUCNksP281w9XXW",
-          "name": "Google Sheets account"
-        }
-      }
+      "id": "79eec07e-8275-4b70-80aa-db4e89e6803c",
+      "name": "Log rank to tracking sheet"
     },
     {
       "parameters": {
-        "content": "Appends new row to your tracking sheet\nEach day adds a new data point\nUse Google Sheets charts to visualize trends\nConsider adding conditional formatting for rank changes",
+        "content": "Appends new row to your tracking sheet\n",
         "height": 400,
         "color": 6
       },
       "type": "n8n-nodes-base.stickyNote",
       "position": [
-        384,
-        32
+        896,
+        656
       ],
       "typeVersion": 1,
-      "id": "9b5ed0a9-1f26-40f9-a409-c26c124d5533",
+      "id": "eb040a8e-ac2b-47b9-a693-21a5435a2e00",
       "name": "Sticky Note1"
     },
     {
       "parameters": {
-        "content": "Formats the data for Google Sheets:\n- Current date/time\n- Chart position (or \"Not Ranked\")\n- Genre tracked\n- Podcast name\nAdd calculated fields here if needed",
+        "content": "Formats the data for Google Sheets:\n\nIf podcast not in charts, this will return empty output.\n",
         "height": 400
       },
       "type": "n8n-nodes-base.stickyNote",
       "position": [
-        128,
-        32
+        592,
+        656
       ],
       "typeVersion": 1,
-      "id": "8ea921ca-fe64-43b8-a995-0f38ed828a55",
+      "id": "401ad052-9466-441f-a4fb-77f19a526c21",
       "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "60c9c765-3ec2-455a-b8ab-753d9b906ac3",
+              "name": "podcasts",
+              "value": "47fd8989-8b5e-4b08-b679-b0645ccf1d08,12178de6-ef3d-41dc-b902-bab8e5b68eaf",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        384,
+        864
+      ],
+      "id": "5a5972ee-fe69-4049-8799-a67cb8cbdcfd",
+      "name": "Filter for one or more podcasts"
+    },
+    {
+      "parameters": {
+        "content": "Filter for one or more podcasts (comma separated string)",
+        "height": 400,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        304,
+        656
+      ],
+      "typeVersion": 1,
+      "id": "f2d3df30-0a84-4507-9122-0ef89fb5b171",
+      "name": "Sticky Note3"
     }
   ],
   "pinData": {},
@@ -168,18 +178,7 @@
       "main": [
         [
           {
-            "node": "Filter for your podcast",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Filter for your podcast": {
-      "main": [
-        [
-          {
-            "node": "Find Rank",
+            "node": "Filter for one or more podcasts",
             "type": "main",
             "index": 0
           }
@@ -196,17 +195,27 @@
           }
         ]
       ]
+    },
+    "Filter for one or more podcasts": {
+      "main": [
+        [
+          {
+            "node": "Find Rank",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": false,
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "cf976bad-e7e8-47fd-8890-abd3a8c282d7",
+  "versionId": "7cd379e8-2728-4b9e-bb2e-6b2f36d0d254",
   "meta": {
-    "templateCredsSetupCompleted": true,
-    "instanceId": "037ca12a37a65de95240f4fc2d09ef5d889852a9a654d7193831532984f75839"
+    "instanceId": "5573683f5e911f04a6e02fa9fc31282ac990fb306ed14a91e7d82ef8946f4fb6"
   },
-  "id": "ui4arBzJG0LB8dXS",
+  "id": "ppndLsbkmDlWEhLS",
   "tags": []
 }

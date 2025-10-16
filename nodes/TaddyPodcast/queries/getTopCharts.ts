@@ -193,10 +193,10 @@ export const getTopChartsFields: INodeProperties[] = [
 	{
 		displayName: 'Genres',
 		name: 'genres',
-		type: 'multiOptions',
+		type: 'options',
 		options: GENRE_OPTIONS,
 		default: [],
-		description: 'Filter top charts by specific genres (at least one required)',
+		description: 'Filter top charts for a specific genre',
 		displayOptions: {
 			show: {
 				operation: [Operation.GET_DAILY_TOP_CHARTS],

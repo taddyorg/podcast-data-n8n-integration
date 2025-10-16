@@ -1,6 +1,6 @@
 import { INodeProperties, IExecuteFunctions, IDataObject } from 'n8n-workflow';
-import { Operation, GENRE_OPTIONS, LANGUAGE_OPTIONS, PODCAST_CONTENT_TYPE_OPTIONS, SearchVariables, PodcastEpisode, EPISODE_EXTENDED_FRAGMENT, PODCAST_SERIES_MINI_FRAGMENT } from '../constants';
-import { requestWithPagination, standardizeResponse, parseDate, numResultsField, expandGenres } from './shared';
+import { Operation, GENRE_OPTIONS, LANGUAGE_OPTIONS, PODCAST_CONTENT_TYPE_OPTIONS, SearchVariables, PodcastEpisode, EPISODE_EXTENDED_FRAGMENT, EPISODE_WITH_TRANSCRIPT_FRAGMENT, PODCAST_SERIES_MINI_FRAGMENT } from '../constants';
+import { requestWithPagination, standardizeResponse, parseDate, numResultsField, expandGenres, includeTranscriptField } from './shared';
 
 // ============================================================================
 // Handler Function
@@ -13,6 +13,7 @@ export async function handleSearchEpisodes(
 ): Promise<IDataObject> {
 	const searchQuery = context.getNodeParameter('episodeSearchQuery', itemIndex) as string;
 	const numResults = context.getNodeParameter(`${operation}-numResults`, itemIndex) as number;
+	const includeTranscript = context.getNodeParameter(`${operation}-includeTranscript`, itemIndex) as boolean;
 
 	const variables: SearchVariables = { term: searchQuery };
 	variables.filterForTypes = ['PODCASTEPISODE'];
@@ -52,12 +53,6 @@ export async function handleSearchEpisodes(
 		variables.sortBy = sortBy;
 	}
 
-	// Episode-specific filters
-	const filterForHasTranscript = advancedOptions.episodeFilterForHasTranscript as boolean || false;
-	if (filterForHasTranscript) {
-		variables.filterForHasTranscript = filterForHasTranscript;
-	}
-
 	const filterForDurationGreaterThan = advancedOptions.episodeFilterForDurationGreaterThan as number || 0;
 	if (filterForDurationGreaterThan) {
 		variables.filterForDurationGreaterThan = filterForDurationGreaterThan;
@@ -89,6 +84,9 @@ export async function handleSearchEpisodes(
 	if (filterForNotInSeriesUuids) {
 		variables.filterForNotInSeriesUuids = filterForNotInSeriesUuids.split(',').map(uuid => uuid.trim()).filter(uuid => uuid);
 	}
+
+	// Dynamically build episode fragment based on includeTranscript
+	const episodeFragment = includeTranscript ? EPISODE_WITH_TRANSCRIPT_FRAGMENT : EPISODE_EXTENDED_FRAGMENT;
 
 	const query = `
 		query Search(
@@ -131,7 +129,7 @@ export async function handleSearchEpisodes(
 			) {
 				searchId
 				podcastEpisodes {
-					${EPISODE_EXTENDED_FRAGMENT}
+					${episodeFragment}
 					podcastSeries {
 						${PODCAST_SERIES_MINI_FRAGMENT}
 					}
@@ -180,6 +178,7 @@ export const searchEpisodesFields: INodeProperties[] = [
 		},
 	},
 	numResultsField(Operation.SEARCH_EPISODES),
+	includeTranscriptField(true, Operation.SEARCH_EPISODES),
 	{
 		displayName: 'Advanced Options',
 		name: 'episodeAdvancedOptions',
@@ -246,14 +245,6 @@ export const searchEpisodesFields: INodeProperties[] = [
 				],
 				default: 'EXACTNESS',
 				description: 'How to sort search results',
-			},
-			{
-				displayName: 'Has Transcript',
-				name: 'episodeFilterForHasTranscript',
-				type: 'boolean',
-				default: false,
-				description: 'Only return episodes with transcripts available',
-				hint: 'Useful for AI-powered summaries',
 			},
 			{
 				displayName: 'Published After',

@@ -112,5 +112,5 @@ export const getLatestEpisodesFields: INodeProperties[] = [
 		},
 	},
 	numResultsField(Operation.GET_LATEST_EPISODES, 25),
-	includeTranscriptField(false, Operation.GET_LATEST_EPISODES),
+	includeTranscriptField(true, Operation.GET_LATEST_EPISODES),
 ];

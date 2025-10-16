@@ -1,0 +1,420 @@
+{
+  "name": "Get Episode Transcripts with Taddy Podcast API to Notion",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        624,
+        736
+      ],
+      "id": "418d0a94-dc6a-4f54-8dca-3bcce52fa6f7",
+      "name": "When clicking 'Execute workflow'"
+    },
+    {
+      "parameters": {
+        "content": "## Get Episode Transcripts with Taddy Podcast API to Notion\n\n## How It Works\n1. **Export** your podcast subscriptions from your podcast app as an OPML file\n2. **Paste** the OPML file contents into the n8n workflow\n3. **Extract** RSS feed URLs automatically\n4. **Fetch** latest episodes from all your subscribed podcasts\n5. **Generate** transcripts for each episode (using existing transcripts or Taddy's AI transcription)\n6. **Create** AI summaries with key points, quotes, and topics\n7. **Save** everything to Notion database for easy searching and reference\n\n## How to Export an OPML from your podcast player\n- **Apple Podcasts (iOS/Mac)**: Go to Settings → Export Subscriptions → Share OPML file\n- **Overcast**: Settings → Export OPML → Copy to clipboard\n- **Pocket Casts**: Settings → Import/Export → Export subscriptions\n- **Spotify**: Does not support OPML export, but use a Spotify n8n node to get your Spotify podcast details.\n- Most podcast apps have OPML export in the app's settings screen.\n\n## Requirements\n- OPML file from your podcast app\n- Taddy API account (sign up at taddy.org/developers)\n- OpenAI API key (or Claude, Gemini, etc.)\n- Notion integration configured\n- Self-hosted n8n instance (required for community nodes)\n\n## How to customize\n- Filter by specific genres or keywords\n- Add sentiment analysis or topic extraction\n- Send summaries via email instead of Notion\n- Schedule daily to create automated podcast digest\n- Extract specific insights like quotes, timestamps, or speakers",
+        "height": 800,
+        "width": 1312
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1136,
+        -384
+      ],
+      "typeVersion": 1,
+      "id": "8957739c-b731-4f99-b257-bdc253721b91",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a78d6d26-8d99-43a6-8b07-4ac7195ad34c",
+              "name": "OPML",
+              "value": "<?xml version='1.0' encoding='UTF-8' standalone='yes' ?> <opml version=\"1.0\">   <head>     <title>Podcast Feeds</title>   </head>   <body>     <outline text=\"feeds\">       <outline type=\"rss\" text=\"The Daily\" xmlUrl=\"https://feeds.simplecast.com/54nAGcIl\" />       <outline type=\"rss\" text=\"The Tim Ferriss Show\" xmlUrl=\"https://rss.art19.com/tim-ferriss-show\" />       <outline type=\"rss\" text=\"Planet Money\" xmlUrl=\"https://feeds.npr.org/510289/podcast.xml\" />       <outline type=\"rss\" text=\"Darknet Diaries\" xmlUrl=\"https://podcast.darknetdiaries.com\" />       <outline type=\"rss\" text=\"StarTalk Radio\" xmlUrl=\"https://feeds.simplecast.com/4T39_jAj\" />     </outline>   </body> </opml>",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        896,
+        736
+      ],
+      "id": "efe51883-d8da-47de-8705-d5a31f041422",
+      "name": "Paste OPML Here"
+    },
+    {
+      "parameters": {
+        "content": "Customize the prompt for your use case:\n- Extract key quotes and timestamps\n- Identify speakers and topics\n- Generate show notes or blog posts\n- Analyze sentiment or themes\nAdjust temperature and max tokens as needed",
+        "height": 416,
+        "width": 288,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2192,
+        512
+      ],
+      "typeVersion": 1,
+      "id": "6c449c01-27cb-4cc6-98c3-6e5bae8fac15",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "Extracts RSS feed URLs from your OPML file and formats them for the Taddy Podcast API node.\n\nOutput: Comma-separated list of RSS URLs",
+        "height": 400,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1088,
+        528
+      ],
+      "typeVersion": 1,
+      "id": "8cc87a23-1808-438f-8828-57dc0d41c11c",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const opmlContent = $input.first().json.OPML;\nconst rssPattern = /<outline[^>]*type=\"rss\"[^>]*xmlUrl=\"([^\"]*)\"[^>]*\\/>/g;\n\nreturn [{\n  json: {\n    rssUrls: [...opmlContent.matchAll(rssPattern)].map(match => match[1]).join(',')\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1152,
+        736
+      ],
+      "id": "b66a7291-5134-48ac-a60e-2ecb73e0419e",
+      "name": "Parse OPML File"
+    },
+    {
+      "parameters": {
+        "operation": "getLatestEpisodes",
+        "latestEpisodesInputType": "rssUrls",
+        "latestEpisodesRssUrls": "={{ $json.rssUrls }}"
+      },
+      "type": "CUSTOM.taddyPodcast",
+      "typeVersion": 1,
+      "position": [
+        1456,
+        736
+      ],
+      "id": "f3a9cd61-fd9d-4bf3-84ec-e123cd176ca4",
+      "name": "Get Latest Episodes",
+      "credentials": {
+        "taddyPodcastApi": {
+          "id": "WgCl0l3g1pf1UJQz",
+          "name": "Taddy Podcast account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "Gets the latest episodes from all your subscribed podcasts using the RSS URLs extracted from your OPML file.",
+        "height": 400,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1376,
+        528
+      ],
+      "typeVersion": 1,
+      "id": "12e15071-1b8a-4a78-b915-0db2ce1bb344",
+      "name": "Episodes Note"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "452260e1-2a3b-4f18-826a-65b2130c8b66",
+              "leftValue": "={{ $json.episode.transcript }}",
+              "rightValue": "",
+              "operator": {
+                "type": "array",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1728,
+        736
+      ],
+      "id": "4a5e7961-6f49-4d64-b26a-b162a3078696",
+      "name": "If transcript exists"
+    },
+    {
+      "parameters": {
+        "content": "Checks if the episode already has a transcript. If yes, uses the existing transcript. If no, generates one using Taddy's AI transcription service.",
+        "height": 400,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1648,
+        528
+      ],
+      "typeVersion": 1,
+      "id": "cc56b30d-050d-473e-a674-a05d9036ebcd",
+      "name": "Transcript Check Note"
+    },
+    {
+      "parameters": {
+        "operation": "getEpisodeTranscript",
+        "episodeUuid": "={{ $json.UUID }}",
+        "includeDetailedTranscript": true
+      },
+      "type": "CUSTOM.taddyPodcast",
+      "typeVersion": 1,
+      "position": [
+        2048,
+        1008
+      ],
+      "id": "ba6bb383-21b8-47fe-ab41-eac0e5938048",
+      "name": "Generate Episode Transcript",
+      "credentials": {
+        "taddyPodcastApi": {
+          "id": "WgCl0l3g1pf1UJQz",
+          "name": "Taddy Podcast account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Analyze this podcast episode transcript and provide:\n\n1. A concise 2-3 sentence summary\n2. 5-7 key points or takeaways\n3. Notable quotes (if any)\n4. Main topics discussed\n\nEpisode: {{ $json.episode.name }}\nPodcast: {{ $json.episode.podcast.name }}\nTranscript:\n{{ $json.episode.transcript }}"
+            },
+            {
+              "content": "You are a podcast transcript analyzer. Always respond with valid JSON in this exact format:\n{\n  \"summary\": \"2-3 sentence concise summary\",\n  \"keyPoints\": [\"point 1\", \"point 2\", \"point 3\", \"point 4\", \"point 5\"],\n  \"quotes\": [\"notable quote 1\", \"notable quote 2\"],\n  \"topics\": [\"topic 1\", \"topic 2\", \"topic 3\"]\n}",
+              "role": "system"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        2224,
+        736
+      ],
+      "id": "d514bb1b-cd3e-41c9-a7ef-54a85143a963",
+      "name": "Generate Summary"
+    },
+    {
+      "parameters": {
+        "jsCode": "const aiResponse = JSON.parse($input.first().json.message.content);\n\nreturn [{\n  json: {\n    summary: aiResponse.summary,\n    keyPoints: aiResponse.keyPoints.join('\\n• '),\n    quotes: aiResponse.quotes.join('\\n\\n'),\n    topics: aiResponse.topics.join(', '),\n    episodeName: $('Get Latest Episodes').first().json.episode.name,\n    podcastName: $('Get Latest Episodes').first().json.episode.podcast.name,\n    episodeUuid: $('Get Latest Episodes').first().json.UUID,\n    publishDate: $('Get Latest Episodes').first().json.episode.datePublished,\n    duration: $('Get Latest Episodes').first().json.episode.duration\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2576,
+        736
+      ],
+      "id": "97ff4359-8c33-440f-a7e4-76344d5e9130",
+      "name": "Format Summary Data"
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "databaseId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Title"
+            },
+            {
+              "key": "Podcast"
+            },
+            {
+              "key": "Summary"
+            },
+            {
+              "key": "Key Points"
+            },
+            {
+              "key": "Topics"
+            },
+            {
+              "key": "Quotes"
+            },
+            {
+              "key": "Episode UUID"
+            },
+            {
+              "key": "Publish Date"
+            },
+            {
+              "key": "Duration"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        2832,
+        736
+      ],
+      "id": "09183d68-190f-4c0c-8133-e1ba25f79d76",
+      "name": "Create Notion Database Page"
+    },
+    {
+      "parameters": {
+        "content": "Map fields to your Notion database schema\nAdd episode metadata (duration, publish date, etc.)\nLink to podcast page if you have a podcasts database\nConsider adding tags for topics or categories\n\nDatabase should have these properties:\n- Title (Title)\n- Podcast (Text)\n- Summary (Text)\n- Key Points (Text)\n- Topics (Text)\n- Quotes (Text)\n- Episode UUID (Text)\n- Publish Date (Date)\n- Duration (Number)",
+        "height": 640,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2768,
+        288
+      ],
+      "typeVersion": 1,
+      "id": "2ea03abf-ce7a-44f6-a559-7343d6a7b2d3",
+      "name": "Notion Setup Note"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking 'Execute workflow'": {
+      "main": [
+        [
+          {
+            "node": "Paste OPML Here",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Paste OPML Here": {
+      "main": [
+        [
+          {
+            "node": "Parse OPML File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse OPML File": {
+      "main": [
+        [
+          {
+            "node": "Get Latest Episodes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Latest Episodes": {
+      "main": [
+        [
+          {
+            "node": "If transcript exists",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If transcript exists": {
+      "main": [
+        [
+          {
+            "node": "Generate Summary",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Generate Episode Transcript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Episode Transcript": {
+      "main": [
+        [
+          {
+            "node": "Generate Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Summary": {
+      "main": [
+        [
+          {
+            "node": "Format Summary Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Summary Data": {
+      "main": [
+        [
+          {
+            "node": "Create Notion Database Page",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "638c933a-444e-4777-8955-79684bd40c1d",
+  "meta": {
+    "instanceId": "5573683f5e911f04a6e02fa9fc31282ac990fb306ed14a91e7d82ef8946f4fb6"
+  },
+  "id": "mMdI8XMg94PeUnFY",
+  "tags": []
+}

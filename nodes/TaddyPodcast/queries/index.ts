@@ -12,6 +12,7 @@ import { getTopChartsFields, handleGetTopCharts } from './getTopCharts';
 import { getEpisodeTranscriptFields, handleGetEpisodeTranscript } from './getEpisodeTranscript';
 import { handleCheckApiRequestsRemaining } from './checkApiRequestsRemaining';
 import { handleCheckTranscriptCreditsRemaining } from './checkTranscriptCreditsRemaining';
+import { getPodcastEpisodeFields, handleGetPodcastEpisode } from './getPodcastEpisode';
 
 // ============================================================================
 // Node Type Description
@@ -58,6 +59,12 @@ export const taddyPodcastDescription: INodeTypeDescription = {
 					action: 'Get details about a podcast',
 				},
 				{
+					name: 'Get Episode Details',
+					value: Operation.GET_PODCAST_EPISODE,
+					description: 'Get details about an episode by its podcast series details and episode name',
+					action: 'Get details about an episode',
+				},	
+				{
 					name: 'Get Newly Released Episodes for a Podcast',
 					value: Operation.GET_EPISODES_FOR_PODCAST_SERIES,
 					description: 'Get the latest episodes for a podcast by its unique identifier (UUID), title/name, RSS URL, or iTunes ID',
@@ -73,7 +80,7 @@ export const taddyPodcastDescription: INodeTypeDescription = {
 					name: 'Generate Episode Transcript',
 					value: Operation.GENERATE_EPISODE_TRANSCRIPT,
 					description: 'If a transcript is not available, you can generate a transcript for an episode (uses Taddy API transcript credits)',
-					action: 'If a transcript is not available, you can generate a transcript for an episode (uses Taddy API transcript credits)',
+					action: 'Generate a transcript for an episode (uses Taddy API transcript credits)',
 				},
 				{
 					name: 'Get Most Popular Podcasts',
@@ -116,6 +123,7 @@ export const taddyPodcastDescription: INodeTypeDescription = {
 		...searchPodcastsFields,
 		...searchEpisodesFields,
 		...getPodcastSeriesFields,
+		...getPodcastEpisodeFields,
 		...getMultiplePodcastsFields,
 		...getMultipleEpisodesFields,
 		...getEpisodesForPodcastSeriesFields,
@@ -172,6 +180,9 @@ export async function handleOperation(
 
 		case Operation.GET_PODCAST_SERIES:
 			return handleGetPodcastSeries(operation, itemIndex, context);
+
+		case Operation.GET_PODCAST_EPISODE:
+			return handleGetPodcastEpisode(operation, itemIndex, context);
 
 		case Operation.GET_EPISODES_FOR_PODCAST_SERIES:
 			return handleGetEpisodesForPodcastSeries(operation, itemIndex, context);

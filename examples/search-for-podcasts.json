@@ -1,19 +1,19 @@
 {
-  "name": "Search podcasts by topic on Taddy Podcast API to Airtable library",
+  "name": "Search podcasts for a keyword on Taddy Podcast API to Airtable",
   "nodes": [
     {
       "parameters": {
-        "content": "## Search podcasts by topic on Taddy to Airtable library\n\n## Who's it for\nPodcast curators, researchers, and content strategists building searchable libraries of podcasts by topic, genre, or language.\n\n## How it works\nEnter a search keyword, genre, or language filter, and this workflow searches Taddy's database for matching podcasts. It retrieves full metadata including RSS feeds, episode counts, and descriptions, then saves everything to an Airtable base for easy organization and future reference.\n\n## Requirements\n- Taddy API account (free tier includes 2,000 requests/month, sign up at taddy.org)\n- Airtable account with a base set up\n- Self-hosted n8n instance (required for community nodes)\n\n## How to set up\n1. Install the Taddy community node from Settings > Community Nodes\n2. Add your Taddy API credentials\n3. Create an Airtable base with fields: Name (single line text), Description (long text), RSS URL (URL), Genre (single select), Language (single line text), Total Episodes (number)\n4. Configure Airtable credentials in n8n\n5. Update the Set Fields node with your search criteria\n6. Run the workflow\n\n## How to customize\n- Add popularity filters or language restrictions\n- Include latest episodes for each podcast\n- Export to Google Sheets or Notion instead\n- Schedule recurring searches to discover new podcasts\n- Add filtering by episode count or publish frequency",
-        "height": 784,
-        "width": 1088
+        "content": "## Search podcasts for a keyword on Taddy Podcast API to Airtable\n\n## How it works\nEnter a search keyword along with filters for genre, or language, etc and this workflow searches Taddy's database for matching podcasts. It retrieves full metadata including RSS feeds, episode counts, and descriptions, then saves everything to an Airtable base for easy organization and future reference.\n\n## Requirements\n- Taddy API account (sign up at taddy.org/developers)\n- Airtable account with a base set up\n- Self-hosted n8n instance (required for community nodes)\n\n## How to customize\n- Include latest episodes for each podcast\n- Schedule recurring searches to discover new podcasts\n- Add filtering by episode count, or publish frequency, or for only popular podcasts\n- Export to Google Sheets or Notion instead\n",
+        "height": 480,
+        "width": 1072
       },
       "type": "n8n-nodes-base.stickyNote",
       "position": [
-        -544,
-        -688
+        16,
+        224
       ],
       "typeVersion": 1,
-      "id": "40fc81de-93b1-4c50-9483-a6fa70cbd112",
+      "id": "50150060-b41e-4fb1-b81b-98db91e62fc8",
       "name": "Sticky Note"
     },
     {
@@ -21,75 +21,11 @@
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
       "position": [
-        -624,
-        448
+        32,
+        1056
       ],
-      "id": "d3f01553-22dc-4d20-b2fb-4689b67466aa",
+      "id": "8a0be32a-54c5-4b59-94ad-d239b76f255f",
       "name": "When clicking ‘Execute workflow’"
-    },
-    {
-      "parameters": {
-        "searchQuery": "=artificial intelligence",
-        "numResults": 10,
-        "advancedOptions": {
-          "filterForGenres": [
-            "PODCASTSERIES_ARTS"
-          ],
-          "filterForLanguages": [
-            "ENGLISH"
-          ],
-          "sortBy": "POPULARITY"
-        }
-      },
-      "type": "CUSTOM.taddyPodcast",
-      "typeVersion": 1,
-      "position": [
-        -352,
-        448
-      ],
-      "id": "8945a7fc-51a1-4970-85d1-18fe54bb20df",
-      "name": "Search Podcasts",
-      "credentials": {
-        "taddyPodcastApi": {
-          "id": "VdezWNeTJukANs8W",
-          "name": "Taddy Podcast account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "operation": "getPodcastSeries",
-        "podcastUuid": "={{ $json.podcastSeries.uuid }}"
-      },
-      "type": "CUSTOM.taddyPodcast",
-      "typeVersion": 1,
-      "position": [
-        144,
-        448
-      ],
-      "id": "98d8d51c-643f-4021-a339-5f32997bee23",
-      "name": "Podcast Data Extractor (Taddy API)",
-      "credentials": {
-        "taddyPodcastApi": {
-          "id": "VdezWNeTJukANs8W",
-          "name": "Taddy Podcast account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "fieldToSplitOut": "podcastSeries",
-        "include": "allOtherFields",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.splitOut",
-      "typeVersion": 1,
-      "position": [
-        -80,
-        448
-      ],
-      "id": "5403e3d8-a059-4898-9c41-7ae69b00684e",
-      "name": "Split Out"
     },
     {
       "parameters": {
@@ -117,57 +53,63 @@
       "type": "n8n-nodes-base.airtable",
       "typeVersion": 2.1,
       "position": [
-        384,
-        448
+        704,
+        1056
       ],
-      "id": "b3a841b7-d96d-4ed3-b5c3-7b42f05fe1d7",
+      "id": "e7ddd269-d2d2-4ed0-b140-6c73314e70a7",
       "name": "Create a record"
     },
     {
       "parameters": {
-        "content": "Optional but recommended - gets full metadata\nAdds: description, episode counts, genres, image URLs\nCan also fetch latest episodes by toggling \"includeEpisodes\"",
-        "height": 384,
+        "content": "Creates new records in your base\n\nTip: Add a \"Date Added\" field to track when discovered",
+        "height": 432,
+        "width": 304,
         "color": 5
       },
       "type": "n8n-nodes-base.stickyNote",
       "position": [
-        64,
-        272
+        608,
+        832
       ],
       "typeVersion": 1,
-      "id": "7f049167-b47d-4aa0-80c3-5084f0d1155f",
-      "name": "Sticky Note1"
-    },
-    {
-      "parameters": {
-        "content": "Creates new records in your base\nAdd deduplication logic if running multiple times\nTip: Add a \"Date Added\" field to track when discovered\nConsider adding tags for categorization",
-        "height": 384,
-        "color": 5
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "position": [
-        320,
-        272
-      ],
-      "typeVersion": 1,
-      "id": "cecc2975-e3cb-4fcc-8e57-7c69663e19d5",
+      "id": "afeb256d-67d1-40bc-97c9-3840fd99008c",
       "name": "Sticky Note2"
     },
     {
       "parameters": {
-        "content": "Configure search criteria and execute\n\nSet your search filters:\n- keywords: e.g., \"artificial intelligence\", \"true crime\", \"business\"\n- language: ISO codes like \"en\" (English), \"es\" (Spanish), \"fr\" (French)\n- limit: max results to return (default: 25)\n\nSearches Taddy's database of millions of podcasts\nUses pagination automatically if results exceed limit\nReturns basic info: name, UUID, RSS URL\nMore filters available: popularity threshold, country, etc.",
-        "height": 480,
-        "width": 416,
+        "content": "Configure your search criteria.\n\nSearches Taddy's database of millions of podcasts and episodes.\n\nUses pagination automatically if you request more than 25 results. ",
+        "height": 432,
+        "width": 320,
         "color": 5
       },
       "type": "n8n-nodes-base.stickyNote",
       "position": [
-        -512,
-        176
+        208,
+        832
       ],
       "typeVersion": 1,
-      "id": "1679261f-3130-4e91-b6b6-84317c140e51",
+      "id": "526f7410-849b-4313-82ec-ae498d105aab",
       "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "searchQuery": "artificial intelligence",
+        "advancedOptions": {}
+      },
+      "type": "CUSTOM.taddyPodcast",
+      "typeVersion": 1,
+      "position": [
+        320,
+        1056
+      ],
+      "id": "c3e7d1db-950c-4159-aefb-90cf83cd141f",
+      "name": "Search for podcasts",
+      "credentials": {
+        "taddyPodcastApi": {
+          "id": "WgCl0l3g1pf1UJQz",
+          "name": "Taddy Podcast account"
+        }
+      }
     }
   ],
   "pinData": {},
@@ -176,36 +118,14 @@
       "main": [
         [
           {
-            "node": "Search Podcasts",
+            "node": "Search for podcasts",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Search Podcasts": {
-      "main": [
-        [
-          {
-            "node": "Split Out",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Split Out": {
-      "main": [
-        [
-          {
-            "node": "Podcast Data Extractor (Taddy API)",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Podcast Data Extractor (Taddy API)": {
+    "Search for podcasts": {
       "main": [
         [
           {
@@ -221,11 +141,10 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "",
+  "versionId": "c143c357-b7a9-4e34-a44f-ba52c822280d",
   "meta": {
-    "templateCredsSetupCompleted": true,
-    "instanceId": ""
+    "instanceId": "5573683f5e911f04a6e02fa9fc31282ac990fb306ed14a91e7d82ef8946f4fb6"
   },
-  "id": "",
+  "id": "e2lPzZV9xpRTsDbU",
   "tags": []
 }

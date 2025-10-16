@@ -1,0 +1,224 @@
+{
+  "name": "Search episodes by keyword on Taddy Podcast API to Airtable",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Search episodes by keyword on Taddy Podcast API to Airtable\n\n## How it works\nEnter a search keyword along with filters for genre, or language, etc and this workflow searches Taddy's database for matching episodes within the last 2 weeks that match that keyword. It retrieves full episode metadata including name, descriptions, audio link and transcripts (if provided) then saves everything to an Airtable base for easy organization and future reference.\n\n## Requirements\n- Taddy API account (sign up at taddy.org/developers)\n- Airtable account with a base set up\n- Self-hosted n8n instance (required for community nodes)\n\n## How to customize\n- Add popularity filters or language restrictions\n- Include latest episodes for each podcast\n- Export to Google Sheets or Notion instead\n- Schedule recurring searches to discover new podcasts",
+        "height": 528,
+        "width": 1104
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        64,
+        208
+      ],
+      "typeVersion": 1,
+      "id": "80145da8-9a24-46a1-88d7-5f7256426e4e",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -144,
+        1104
+      ],
+      "id": "9479dd8f-4dd9-4c68-8d09-402b6b2b144b",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "operation": "getMultipleEpisodes",
+        "episodeUuids": "={{ $json.episodeUuids }}"
+      },
+      "type": "CUSTOM.taddyPodcast",
+      "typeVersion": 1,
+      "position": [
+        736,
+        1104
+      ],
+      "id": "9e2eb12f-602c-430e-89f1-02fa247b8a47",
+      "name": "Podcast Data Extractor (Taddy API)",
+      "credentials": {
+        "taddyPodcastApi": {
+          "id": "WgCl0l3g1pf1UJQz",
+          "name": "Taddy Podcast account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "table": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        1104,
+        1104
+      ],
+      "id": "1f5e25c4-fae4-4d29-84c2-52010d6d6ae7",
+      "name": "Create a record"
+    },
+    {
+      "parameters": {
+        "content": "Get Full Podcast MetaData for each episode",
+        "height": 384,
+        "width": 272,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        640,
+        928
+      ],
+      "typeVersion": 1,
+      "id": "96968167-e5bd-4e65-9a69-f1c51af31533",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "Creates new records in your base\n\nTip: Add a \"Date Added\" field to track when discovered\n",
+        "height": 384,
+        "width": 320,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1008,
+        928
+      ],
+      "typeVersion": 1,
+      "id": "a6e38dc3-e046-40ce-bfb9-7b6609bbfe89",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "Configure your search criteria.\n\nSearches Taddy's database of millions of podcasts and episodes.\n\nUses pagination automatically if you request more than 25 results. ",
+        "height": 448,
+        "width": 336,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        48,
+        864
+      ],
+      "typeVersion": 1,
+      "id": "a13cac31-9dbe-4467-9e38-df89835b2fcd",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "operation": "searchEpisodes",
+        "episodeSearchQuery": "artificial intelligence",
+        "episodeAdvancedOptions": {
+          "episodeFilterForPublishedAfter": "={{ $now.minus({weeks: 2}).toFormat('yyyy-MM-dd') }}"
+        }
+      },
+      "type": "CUSTOM.taddyPodcast",
+      "typeVersion": 1,
+      "position": [
+        160,
+        1104
+      ],
+      "id": "bb1bcea4-2c28-420e-b78e-f7d7a6bd9aa7",
+      "name": "Search for episodes",
+      "credentials": {
+        "taddyPodcastApi": {
+          "id": "WgCl0l3g1pf1UJQz",
+          "name": "Taddy Podcast account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "let episodeUuids = [];\n\n// Loop over input items\nfor (const item of $input.all()) {\n  // Check if podcastEpisodes exists and has episodes\n  if (item.json.podcastEpisodes && item.json.podcastEpisodes.length > 0) {\n    // Extract UUIDs from all episodes in this item\n    for (const episode of item.json.podcastEpisodes) {\n      if (episode.uuid) {\n        episodeUuids.push(episode.uuid);\n      }\n    }\n  }\n}\n\n// Return the episode UUIDs as separate items for the next node\nreturn { json: { episodeUuids: episodeUuids.join(',') } };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        464,
+        1104
+      ],
+      "id": "d2dfff6b-8d5b-4ce4-8fe5-597053596cf3",
+      "name": "Parse JSON to return episode uuids"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Search for episodes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Podcast Data Extractor (Taddy API)": {
+      "main": [
+        [
+          {
+            "node": "Create a record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search for episodes": {
+      "main": [
+        [
+          {
+            "node": "Parse JSON to return episode uuids",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse JSON to return episode uuids": {
+      "main": [
+        [
+          {
+            "node": "Podcast Data Extractor (Taddy API)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "0a975a8c-8725-41fe-9e7b-152a340e7511",
+  "meta": {
+    "instanceId": "5573683f5e911f04a6e02fa9fc31282ac990fb306ed14a91e7d82ef8946f4fb6"
+  },
+  "id": "gueM5OJAmHuykx7o",
+  "tags": []
+}

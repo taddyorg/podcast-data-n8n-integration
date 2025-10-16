@@ -1,6 +1,6 @@
 import { INodeProperties, IExecuteFunctions, IDataObject } from 'n8n-workflow';
-import { Operation, PodcastEpisode, EPISODE_EXTENDED_FRAGMENT } from '../constants';
-import { requestWithRetry, standardizeResponse, parseAndValidateUuids } from './shared';
+import { Operation, PodcastEpisode, EPISODE_EXTENDED_FRAGMENT, EPISODE_WITH_TRANSCRIPT_FRAGMENT, PODCAST_SERIES_EXTENDED_FRAGMENT } from '../constants';
+import { requestWithRetry, standardizeResponse, parseAndValidateUuids, includeTranscriptField } from './shared';
 
 // ============================================================================
 // Handler Function
@@ -12,12 +12,19 @@ export async function handleGetMultipleEpisodes(
 	context: IExecuteFunctions,
 ): Promise<IDataObject> {
 	const uuidsInput = context.getNodeParameter('episodeUuids', itemIndex) as string;
+	const includeTranscript = context.getNodeParameter(`${operation}-includeTranscript`, itemIndex) as boolean;
 	const uuids = parseAndValidateUuids(uuidsInput, 25, context);
+
+	// Dynamically build episode fragment based on includeTranscript
+	const episodeFragment = includeTranscript ? EPISODE_WITH_TRANSCRIPT_FRAGMENT : EPISODE_EXTENDED_FRAGMENT;
 
 	const query = `
 		query GetMultipleEpisodes($uuids: [ID]) {
 			getMultiplePodcastEpisodes(uuids: $uuids) {
-				${EPISODE_EXTENDED_FRAGMENT}
+				${episodeFragment}
+				podcastSeries {
+					${PODCAST_SERIES_EXTENDED_FRAGMENT}
+				}
 			}
 		}
 	`;
@@ -50,4 +57,5 @@ export const getMultipleEpisodesFields: INodeProperties[] = [
 			},
 		},
 	},
+	includeTranscriptField(true, Operation.GET_MULTIPLE_EPISODES),
 ];

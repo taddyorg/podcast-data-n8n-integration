@@ -17,6 +17,7 @@ export enum Operation {
 	GET_MULTIPLE_PODCASTS = 'getMultiplePodcasts',
 	GET_MULTIPLE_EPISODES = 'getMultipleEpisodes',
 	GET_PODCAST_SERIES = 'getPodcastSeries',
+	GET_PODCAST_EPISODE = 'getPodcastEpisode',
 	GET_EPISODES_FOR_PODCAST_SERIES = 'getEpisodesForPodcastSeries',
 	GET_POPULAR_PODCASTS = 'getPopularPodcasts',
 	GET_DAILY_TOP_CHARTS = 'getDailyTopCharts',

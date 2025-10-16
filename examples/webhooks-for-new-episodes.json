@@ -1,75 +1,102 @@
 {
-  "name": "Monitor Podcasts for New Episodes with Taddy to Slack",
+  "name": "Monitor for new podcasts or episodes with Taddy Podcast API to Slack",
   "nodes": [
     {
       "parameters": {
-        "rule": {
-          "interval": [
-            {
-              "triggerAtHour": 8
-            }
-          ]
-        }
-      },
-      "type": "n8n-nodes-base.scheduleTrigger",
-      "typeVersion": 1.2,
-      "position": [
-        -448,
-        -16
-      ],
-      "id": "23877a01-0abf-44d1-9f97-4b386bda0b53",
-      "name": "Schedule Trigger"
-    },
-    {
-      "parameters": {
-        "operation": "getLatestEpisodes",
-        "latestEpisodesUuids": "d682a935-ad2d-46ee-a0ac-139198b83bcc, cb8d858a-3ef4-4645-8942-67e55c0927f2, 4e883d98-43d1-4ac7-8de8-4afc13244393",
-        "includeTranscript": false
-      },
-      "type": "CUSTOM.taddyPodcast",
-      "typeVersion": 1,
-      "position": [
-        -256,
-        -16
-      ],
-      "id": "a040fe91-7222-4e76-b022-5db17940710a",
-      "name": "Get Newly Released Episodes",
-      "credentials": {
-        "taddyPodcastApi": {
-          "id": "VdezWNeTJukANs8W",
-          "name": "Taddy Podcast account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "fieldToSplitOut": "episodes",
-        "include": "allOtherFields",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.splitOut",
-      "typeVersion": 1,
-      "position": [
-        -48,
-        -16
-      ],
-      "id": "3ba995db-0b33-4ca7-a1da-5c6ca364ca1b",
-      "name": "Split Out"
-    },
-    {
-      "parameters": {
-        "content": "## Monitor podcasts for new episodes with Taddy to Slack\n\n## Who's it for\nPodcast enthusiasts, content curators, and marketing teams who want to stay updated on new episodes from their favorite podcasts.\n\n## How it works\nThis workflow checks daily for new episodes from a list of podcasts you're monitoring. When a new episode is published, it sends a formatted notification to your Slack channel with the episode title, description, and listen link.\n\n## Requirements\n- Taddy API account (sign up at taddy.org)\n- Slack workspace with incoming webhook or bot token\n- Self-hosted n8n instance (required for community nodes)\n\n## How to set up\n1. Install the Taddy community node from Settings > Community Nodes\n2. Add your Taddy API credentials\n3. Configure your Slack credentials\n4. Update the \"Podcast UUIDs\" in the Set Fields node with your podcasts\n5. Adjust the schedule trigger timing as needed\n\n## How to customize\n- Change notification destination (email, Discord, Teams, etc.)\n- Add filtering by genre or keyword\n- Store episodes in a database for trend analysis",
-        "height": 688,
+        "content": "## Monitor for new podcasts or episodes with Taddy Podcast API to Slack\n\n## Requirements\n- Taddy API Business account (sign up at taddy.org/developers).\n- Self-hosted n8n instance (required for community nodes)\n\n## How it works\nLog into the Taddy Podcast API dashboard. Click the 'Add Webhook' button to set up a webhook. This workflow will run every time it receives a webhook notification from Taddy API. You can receive notifications for new podcast series, updated podcast series, new podcast episodes or updated podcast episodes. It then filters for only the content you care about and posts the details to Slack.\n\n## How to customize\n- Change notification destination (email, Discord, Teams, etc.)\n- Add other filtering by genre or keyword\n- Store episodes in a database for trend analysis",
+        "height": 464,
         "width": 928
       },
       "type": "n8n-nodes-base.stickyNote",
       "position": [
-        -544,
-        -768
+        -1488,
+        416
       ],
       "typeVersion": 1,
-      "id": "f5d17e0f-d798-496b-8c84-a79003fb71c6",
+      "id": "e2ef2359-f1b5-47b5-94af-7211fcfc73b0",
       "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "text": "=🎙️ *New Episode Alert!*\n\n*{{ $('Filter podcasts').item.json.episodes.name }}*\n_{{ $json.podcast.name }}_\n\n📝 *Description:*\n{{ $('Filter podcasts').item.json.episodes.description }}\n\n⏱️ *Duration:* {{ Math.round( $('Filter podcasts').item.json.episodes.duration / 60)  }} minutes\n📅 *Published:* {{ DateTime.fromSeconds($('Filter podcasts').item.json.episodes.datePublished).toLocaleString(DateTime.DATETIME_MED) }}\n\n🎧 *Listen now:*\n<{{ $('Filter podcasts').item.json.episodes.audioUrl  }}|Listen Here>\n\n---\n_Powered by Taddy API_",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        -96,
+        1056
+      ],
+      "id": "81024cf2-04f3-4727-9d9d-24b71f6367dd",
+      "name": "Send a message",
+      "webhookId": "528a79ff-d448-4035-9f5d-bfdb9df65e2a"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "92520e96-cb40-4488-add0-989f995d1c14",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -640,
+        1056
+      ],
+      "id": "8c62955b-cbfb-42a1-ab83-544ab619650e",
+      "name": "Webhook",
+      "webhookId": "92520e96-cb40-4488-add0-989f995d1c14"
+    },
+    {
+      "parameters": {
+        "content": "## Testing the webhook (Part 1)\n\nWhen testing / before you active this workflow, n8n will receive webhook notifications on a Test URL. Add this url to Taddy API's Dashboard.\n\nSince this url is localhost (local to your computer). Use a service like ngrok which provides you a public url that is mapped to your localhost. \n\nRun the command: ```ngrok http 5678``` in your terminal to start ngrok.\n\n![Source example](https://ax0.taddy.org/docs/n8n-webhooks-test.png)\n",
+        "height": 832,
+        "width": 384
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -480,
+        48
+      ],
+      "typeVersion": 1,
+      "id": "a46ca01f-b3f6-4be3-82a6-bcdb8afff7e8",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Activating the workflow (Part 3)\n\nOnce you activate the workflow, the n8n endpoint where you receive webhook notifications changes to the Production URL. Update Taddy API to this new webhook endpoint.\n\n![Source example](https://ax0.taddy.org/docs/n8n-webhooks-prod.png)\n",
+        "height": 832,
+        "width": 400
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        480,
+        48
+      ],
+      "typeVersion": 1,
+      "id": "ea734860-9d6e-4be3-88ee-eb3dfc3316b6",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## Testing the webhook (Part 2)\n\nOn Taddy API's dashboard, you can set the n8n endpoint where it sends webhook notifications, as well as specify which webhook events you want to receive.\n \n![Source example](https://ax0.taddy.org/docs/taddy-webhooks-settings.png)\n\nIn n8n, Open the Webhook node and click 'Listen for test event` to test that you have successfully connected n8n to Taddy API Webhooks.",
+        "height": 880,
+        "width": 384
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        0,
+        0
+      ],
+      "typeVersion": 1,
+      "id": "026908ce-0797-40c3-8a41-ba0047c6dc73",
+      "name": "Sticky Note3"
     },
     {
       "parameters": {
@@ -83,15 +110,24 @@
           "conditions": [
             {
               "id": "1e931b3a-64e4-457b-874f-05e33f6952cf",
-              "leftValue": "={{ $json.episodes.datePublished }}",
-              "rightValue": "={{ $now.minus({ days: 1 }).toSeconds() }}",
+              "leftValue": "={{ $json.body.data.name }}",
+              "rightValue": "=artificial intelligence",
               "operator": {
-                "type": "number",
-                "operation": "gt"
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "f59307bd-e751-4241-a5a4-05b9c79193c5",
+              "leftValue": "={{ $json.body.data.description }}",
+              "rightValue": "artificial intelligence",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
               }
             }
           ],
-          "combinator": "and"
+          "combinator": "or"
         },
         "looseTypeValidation": true,
         "options": {}
@@ -99,101 +135,27 @@
       "type": "n8n-nodes-base.filter",
       "typeVersion": 2.2,
       "position": [
-        160,
-        -16
+        -368,
+        1056
       ],
-      "id": "aa627e1b-bb22-466c-9c57-0b9886a850fe",
-      "name": "Only Episodes from the last 24 hrs"
-    },
-    {
-      "parameters": {
-        "select": "channel",
-        "channelId": {
-          "__rl": true,
-          "mode": "list",
-          "value": ""
-        },
-        "text": "=🎙️ *New Episode Alert!*\n\n*{{ $('Only Episodes from the last 24 hrs').item.json.episodes.name }}*\n_{{ $json.podcast.name }}_\n\n📝 *Description:*\n{{ $('Only Episodes from the last 24 hrs').item.json.episodes.description }}\n\n⏱️ *Duration:* {{ Math.round( $('Only Episodes from the last 24 hrs').item.json.episodes.duration / 60)  }} minutes\n📅 *Published:* {{ DateTime.fromSeconds($('Only Episodes from the last 24 hrs').item.json.episodes.datePublished).toLocaleString(DateTime.DATETIME_MED) }}\n\n🎧 *Listen now:*\n<{{ $('Only Episodes from the last 24 hrs').item.json.episodes.audioUrl  }}|Listen Here>\n\n---\n_Powered by Taddy API_",
-        "otherOptions": {}
-      },
-      "type": "n8n-nodes-base.slack",
-      "typeVersion": 2.3,
-      "position": [
-        576,
-        -16
-      ],
-      "id": "fe9ad473-ce6f-4ebb-9e45-84a73c038b58",
-      "name": "Send a message",
-      "webhookId": "528a79ff-d448-4035-9f5d-bfdb9df65e2a"
-    },
-    {
-      "parameters": {
-        "operation": "getPodcastSeries",
-        "podcastUuid": "={{ $json.episodes.podcastSeries.uuid }}"
-      },
-      "type": "CUSTOM.taddyPodcast",
-      "typeVersion": 1,
-      "position": [
-        368,
-        -16
-      ],
-      "id": "e56545f8-4721-49de-8962-0413a9d6e415",
-      "name": "Get Podcast Details",
-      "credentials": {
-        "taddyPodcastApi": {
-          "id": "VdezWNeTJukANs8W",
-          "name": "Taddy Podcast account"
-        }
-      }
+      "id": "df488c78-06e7-433e-82fe-03829bf6a54e",
+      "name": "Filter podcasts"
     }
   ],
   "pinData": {},
   "connections": {
-    "Schedule Trigger": {
+    "Webhook": {
       "main": [
         [
           {
-            "node": "Get Newly Released Episodes",
+            "node": "Filter podcasts",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Get Newly Released Episodes": {
-      "main": [
-        [
-          {
-            "node": "Split Out",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Split Out": {
-      "main": [
-        [
-          {
-            "node": "Only Episodes from the last 24 hrs",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Only Episodes from the last 24 hrs": {
-      "main": [
-        [
-          {
-            "node": "Get Podcast Details",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Get Podcast Details": {
+    "Filter podcasts": {
       "main": [
         [
           {
@@ -209,11 +171,10 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "",
+  "versionId": "217ba276-a40d-465f-a6b6-12807cad08cb",
   "meta": {
-    "templateCredsSetupCompleted": true,
-    "instanceId": ""
+    "instanceId": "5573683f5e911f04a6e02fa9fc31282ac990fb306ed14a91e7d82ef8946f4fb6"
   },
-  "id": "",
+  "id": "OxODTRwzUe2ily7J",
   "tags": []
 }
