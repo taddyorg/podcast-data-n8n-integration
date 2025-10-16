@@ -239,5 +239,5 @@ export const getEpisodesForPodcastSeriesFields: INodeProperties[] = [
 		},
 	},
 	numResultsField(Operation.GET_EPISODES_FOR_PODCAST_SERIES),
-	includeTranscriptField(false, Operation.GET_EPISODES_FOR_PODCAST_SERIES),
+	includeTranscriptField(true, Operation.GET_EPISODES_FOR_PODCAST_SERIES),
 ];
