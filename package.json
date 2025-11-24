@@ -1,6 +1,6 @@
 {
   "name": "podcast-data-n8n-node",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Extract data from 4M+ podcasts via Taddy API - search shows, get episodes, extract transcripts for podcast analysis workflows",
   "keywords": [
     "n8n-community-node-package",
@@ -26,7 +26,7 @@
   },
   "main": "index.js",
   "scripts": {
-    "build": "npx rimraf dist && tsc && cp nodes/TaddyPodcast/*.png dist/nodes/TaddyPodcast/ 2>/dev/null || true",
+    "build": "npx rimraf dist && tsc && cp nodes/TaddyPodcast/*.png dist/nodes/TaddyPodcast/ 2>/dev/null || true && cp nodes/TaddyPodcastTrigger/*.png dist/nodes/TaddyPodcastTrigger/ 2>/dev/null || true && cp nodes/TaddyPodcastWebhookTrigger/*.png dist/nodes/TaddyPodcastWebhookTrigger/ 2>/dev/null || true",
     "dev": "tsc --watch",
     "format": "prettier nodes credentials --write",
     "lint": "eslint nodes credentials package.json",
@@ -49,7 +49,9 @@
       "dist/credentials/TaddyPodcastApi.credentials.js"
     ],
     "nodes": [
-      "dist/nodes/TaddyPodcast/TaddyPodcast.node.js"
+      "dist/nodes/TaddyPodcast/TaddyPodcast.node.js",
+      "dist/nodes/TaddyPodcastTrigger/TaddyPodcastTrigger.node.js",
+      "dist/nodes/TaddyPodcastWebhookTrigger/TaddyPodcastWebhookTrigger.node.js"
     ]
   },
   "devDependencies": {
