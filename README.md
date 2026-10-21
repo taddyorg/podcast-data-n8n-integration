@@ -8,6 +8,7 @@ This n8n community node integrates **[Taddy Podcast API](https://taddy.org/devel
 
 ## Features
 
+- **Workflow Triggers** - Automatically trigger workflows when new episodes are published to monitored podcasts (polling and webhook triggers)
 - **Advanced Search** - Find podcasts and episodes with filters for keywords, genres, language, popularity, date ranges, and duration
 - **Podcast & Episode Data** - Retrieve detailed information about a podcast or episode by UUID, name, RSS URL, or iTunes ID
 - **Charts & Discovery** - Access daily top charts by country or genre, discover trending podcasts
@@ -23,6 +24,10 @@ Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes
 3. Click **Install**
 
 ## Operations
+
+### Triggers
+* **Watch for new episodes (Polling)** - Monitor up to 1,000 podcasts and trigger workflows when new episodes are published (configurable poll interval)
+* **New episode (Webhook)** - Instant webhook trigger for real-time episode notifications (currently hidden - will be enabled when webhook filtering is available)
 
 ### Search & Discovery
 * **Search for podcasts** - Search with advanced filters (keywords, genres, language, popularity, etc.)
@@ -78,6 +83,7 @@ Tested with n8n version 1.39.1 and above.
 
 ## Version History
 
+* **1.1.0** - Added polling trigger for monitoring new episodes, webhook trigger (hidden until filtering available)
 * **1.0.0** - Added example workflows / templates
 * **0.3.0** - Added new queries, pagination, and error handling
 * **0.2.3** - Refactored into separate operations

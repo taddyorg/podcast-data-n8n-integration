@@ -27,7 +27,7 @@ npm run format      # Format code with Prettier
 npm run prepublishOnly  # Runs build and lint with stricter rules before publishing
 ```
 
-**Important**: The build process compiles TypeScript to `dist/` but does NOT automatically copy icon files (`.png`). If working with icons, manually copy them to `dist/nodes/TaddyPodcast/` after building, or rely on CI/CD which handles this via the GitHub Actions workflow.
+**Important**: The build process compiles TypeScript to `dist/` and automatically copies icon files (`.png`) for all three node directories (TaddyPodcast, TaddyPodcastTrigger, TaddyPodcastWebhookTrigger). The build script uses conditional copying (`2>/dev/null || true`) to avoid errors if PNG files are missing.
 
 ## Code Architecture
 
@@ -54,7 +54,15 @@ nodes/
       getEpisodeTranscript.ts       # Transcript extraction
       checkApiRequestsRemaining.ts  # API quota check
       checkTranscriptCreditsRemaining.ts # Credit balance check
-    taddypodcast.png                # Node icon
+    taddy-api-logo.png              # Node icon
+  TaddyPodcastTrigger/
+    TaddyPodcastTrigger.node.ts     # Polling trigger (monitors up to 1,000 podcasts)
+    TaddyPodcastTrigger.node.json   # Node metadata
+    taddy-api-logo.png              # Trigger node icon
+  TaddyPodcastWebhookTrigger/
+    TaddyPodcastWebhookTrigger.node.ts  # Webhook trigger (hidden until filtering available)
+    TaddyPodcastWebhookTrigger.node.json # Node metadata
+    taddy-api-logo.png              # Webhook trigger icon
 dist/                               # Build output (git-ignored)
 ```
 
@@ -141,6 +149,36 @@ The `TaddyPodcastApi.credentials.ts` file:
 - Requires two fields: userId (string) and apiKey (password-protected string)
 - Includes credential test via GraphQL query `getTranscriptCreditsRemaining`
 - Test validates both authentication and API connectivity
+
+### Trigger Nodes
+
+The integration includes two trigger nodes for workflow automation:
+
+**TaddyPodcastTrigger (Polling Trigger)**:
+- Monitors up to 1,000 podcasts (specified by UUIDs or RSS URLs) for new episodes
+- Configurable poll interval: 1-1440 minutes (default 15 minutes)
+- Uses workflow static data for deduplication (stores last 1,000 seen episode IDs)
+- GraphQL query: `getLatestPodcastEpisodes` with `limitPerPage` parameter
+- Emits new episodes via `this.emit([this.helpers.returnJsonArray(newEpisodes)])`
+- Implements `ITriggerFunctions` with async `trigger()` method returning `ITriggerResponse`
+- Includes `closeFunction` for cleanup (clears interval on workflow deactivation)
+
+**TaddyPodcastWebhookTrigger (Webhook Trigger - Hidden)**:
+- Real-time webhook trigger for episode events (created/updated/deleted)
+- Currently hidden (`hidden: true`) because Taddy webhooks fire globally without filtering
+- Will be enabled mid-December 2025 when webhook filtering becomes available (per Danny's email)
+- Implements `webhookMethods` (checkExists, create, delete) and `webhook()` function
+- Webhook registration: Uses `addWebhookUrlForUser` GraphQL mutation
+- Webhook deletion: Uses `deleteWebhookForUser` GraphQL mutation
+- Security: Verifies `X-Taddy-Webhook-Secret` header against stored secret
+- Returns enriched episode data with metadata (`_webhookEvent`, `_webhookTimestamp`, `_webhookType`)
+
+**Key Patterns**:
+- Both triggers use the same `TaddyPodcastApi` credentials
+- Polling trigger prevents duplicate episodes by tracking UUIDs in workflow static data
+- Webhook trigger stores webhook ID and secret in workflow static data
+- Episode data uses `EPISODE_EXTENDED_FRAGMENT` from constants.ts for consistency
+- Comprehensive documentation comments explain webhook hiding and future activation
 
 ## n8n-Specific Conventions
 
